@@ -108,6 +108,9 @@ def process_file(path, it):
     data = np.asarray(image)
     data = np.mean(data, axis=2)
 
+    img = Image.fromarray(data)
+    img.show()
+
     generate_memmap(data.shape, path, data, it)
 
 
