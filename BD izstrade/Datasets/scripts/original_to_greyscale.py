@@ -38,7 +38,7 @@ def generate_memmap(shape, path, image: np.ndarray):
 
 
 def process_file(path):
-    image = Image.open(path)
+    image = Image.open(path).convert("RGBA")
     image = image.resize((480, 320), Image.ANTIALIAS)
     data = np.asarray(image)
     data = np.mean(data, axis=2)
@@ -49,6 +49,6 @@ if __name__ == '__main__':
     for it, img in enumerate(os.scandir(directory)):
         if img.path.endswith(".jpg") and img.is_file():
             process_file(img.path)
-        if it > 50:
-            break
+        if it%20 == 0:
+            print(f"{it} out of 30k images finished. {(it/30000) * 100} % done")
     save_json()
