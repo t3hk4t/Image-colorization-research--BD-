@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="16e9b0c6-6e74-495d-8e08-cb5fda2ada26" name="Default Changelist" comment="" />
+    <list default="true" id="16e9b0c6-6e74-495d-8e08-cb5fda2ada26" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -24,7 +26,8 @@
   </component>
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="WebServerToolWindowFactoryState" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/main.py" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
@@ -32,7 +35,7 @@
       <recent name="C:\Users\37120\Documents\BachelorThesis\Bachelor thesis\BD izstrade\Datasets\scripts" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.augment_30k">
+  <component name="RunManager" selected="Python.main">
     <configuration name="augment_30k" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Bachelor thesis" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -45,6 +48,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/BD izstrade/Datasets/scripts/augment_30k.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -66,7 +70,30 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/BD izstrade/Datasets/scripts/download_vids.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="main" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="Bachelor thesis" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="C:\Users\vecin\.conda\envs\conda_env\python.exe" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -87,6 +114,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/BD izstrade/Datasets/scripts/original_to_greyscale.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -108,6 +136,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/BD izstrade/Datasets/scripts/test.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -117,6 +146,13 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <list>
+      <item itemvalue="Python.main" />
+      <item itemvalue="Python.augment_30k" />
+      <item itemvalue="Python.download_vids" />
+      <item itemvalue="Python.original_to_greyscale" />
+      <item itemvalue="Python.test" />
+    </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.augment_30k" />
@@ -126,7 +162,10 @@
       </list>
     </recent_temporary>
   </component>
-  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="SpellCheckerSettings" BundledDictionaries="0" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" Dictionaries="0" CorrectionsLimit="5" DefaultDictionary="application-level" UseSingleDictionary="true" />
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="16e9b0c6-6e74-495d-8e08-cb5fda2ada26" name="Default Changelist" comment="" />
@@ -134,49 +173,89 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1600625203998</updated>
+      <workItem from="1601466384344" duration="1243000" />
     </task>
     <servers />
   </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="2" />
+  </component>
   <component name="WindowStateProjectService">
-    <state width="938" height="367" key="GridCell.Tab.0.bottom" timestamp="1600864691740">
-      <screen x="0" y="0" width="1920" height="1080" />
+    <state x="2654" y="-271" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1601466602990">
+      <screen x="1920" y="-626" width="2560" height="1400" />
     </state>
+    <state x="2654" y="-271" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1920.1040/1920.-626.2560.1400@1920.-626.2560.1400" timestamp="1601466602990" />
+    <state x="2980" y="-171" key="FileChooserDialogImpl" timestamp="1601466601406">
+      <screen x="1920" y="-626" width="2560" height="1400" />
+    </state>
+    <state x="2980" y="-171" key="FileChooserDialogImpl/0.0.1920.1040/1920.-626.2560.1400@1920.-626.2560.1400" timestamp="1601466601406" />
+    <state width="2517" height="482" key="GridCell.Tab.0.bottom" timestamp="1601467627755">
+      <screen x="1920" y="-626" width="2560" height="1400" />
+    </state>
+    <state width="2517" height="482" key="GridCell.Tab.0.bottom/0.0.1920.1040/1920.-626.2560.1400@1920.-626.2560.1400" timestamp="1601467627755" />
     <state width="1897" height="295" key="GridCell.Tab.0.bottom/0.0.1920.1080/1920.0.1920.1080@1920.0.1920.1080" timestamp="1600627509638" />
     <state width="938" height="367" key="GridCell.Tab.0.bottom/0.0.1920.1080@0.0.1920.1080" timestamp="1600864691740" />
-    <state width="938" height="367" key="GridCell.Tab.0.center" timestamp="1600864691740">
-      <screen x="0" y="0" width="1920" height="1080" />
+    <state width="2517" height="482" key="GridCell.Tab.0.center" timestamp="1601467627754">
+      <screen x="1920" y="-626" width="2560" height="1400" />
     </state>
+    <state width="2517" height="482" key="GridCell.Tab.0.center/0.0.1920.1040/1920.-626.2560.1400@1920.-626.2560.1400" timestamp="1601467627754" />
     <state width="1897" height="295" key="GridCell.Tab.0.center/0.0.1920.1080/1920.0.1920.1080@1920.0.1920.1080" timestamp="1600627509638" />
     <state width="938" height="367" key="GridCell.Tab.0.center/0.0.1920.1080@0.0.1920.1080" timestamp="1600864691740" />
-    <state width="938" height="367" key="GridCell.Tab.0.left" timestamp="1600864691740">
-      <screen x="0" y="0" width="1920" height="1080" />
+    <state width="2517" height="482" key="GridCell.Tab.0.left" timestamp="1601467627754">
+      <screen x="1920" y="-626" width="2560" height="1400" />
     </state>
+    <state width="2517" height="482" key="GridCell.Tab.0.left/0.0.1920.1040/1920.-626.2560.1400@1920.-626.2560.1400" timestamp="1601467627754" />
     <state width="1897" height="295" key="GridCell.Tab.0.left/0.0.1920.1080/1920.0.1920.1080@1920.0.1920.1080" timestamp="1600627509638" />
     <state width="938" height="367" key="GridCell.Tab.0.left/0.0.1920.1080@0.0.1920.1080" timestamp="1600864691740" />
-    <state width="938" height="367" key="GridCell.Tab.0.right" timestamp="1600864691740">
-      <screen x="0" y="0" width="1920" height="1080" />
+    <state width="2517" height="482" key="GridCell.Tab.0.right" timestamp="1601467627754">
+      <screen x="1920" y="-626" width="2560" height="1400" />
     </state>
+    <state width="2517" height="482" key="GridCell.Tab.0.right/0.0.1920.1040/1920.-626.2560.1400@1920.-626.2560.1400" timestamp="1601467627754" />
     <state width="1897" height="295" key="GridCell.Tab.0.right/0.0.1920.1080/1920.0.1920.1080@1920.0.1920.1080" timestamp="1600627509638" />
     <state width="938" height="367" key="GridCell.Tab.0.right/0.0.1920.1080@0.0.1920.1080" timestamp="1600864691740" />
-    <state width="938" height="367" key="GridCell.Tab.1.bottom" timestamp="1600864691740">
-      <screen x="0" y="0" width="1920" height="1080" />
+    <state width="2517" height="482" key="GridCell.Tab.1.bottom" timestamp="1601467627755">
+      <screen x="1920" y="-626" width="2560" height="1400" />
     </state>
+    <state width="2517" height="482" key="GridCell.Tab.1.bottom/0.0.1920.1040/1920.-626.2560.1400@1920.-626.2560.1400" timestamp="1601467627755" />
     <state width="938" height="367" key="GridCell.Tab.1.bottom/0.0.1920.1080@0.0.1920.1080" timestamp="1600864691740" />
-    <state width="938" height="367" key="GridCell.Tab.1.center" timestamp="1600864691740">
-      <screen x="0" y="0" width="1920" height="1080" />
+    <state width="2517" height="482" key="GridCell.Tab.1.center" timestamp="1601467627755">
+      <screen x="1920" y="-626" width="2560" height="1400" />
     </state>
+    <state width="2517" height="482" key="GridCell.Tab.1.center/0.0.1920.1040/1920.-626.2560.1400@1920.-626.2560.1400" timestamp="1601467627755" />
     <state width="938" height="367" key="GridCell.Tab.1.center/0.0.1920.1080@0.0.1920.1080" timestamp="1600864691740" />
-    <state width="938" height="367" key="GridCell.Tab.1.left" timestamp="1600864691740">
-      <screen x="0" y="0" width="1920" height="1080" />
+    <state width="2517" height="482" key="GridCell.Tab.1.left" timestamp="1601467627755">
+      <screen x="1920" y="-626" width="2560" height="1400" />
     </state>
+    <state width="2517" height="482" key="GridCell.Tab.1.left/0.0.1920.1040/1920.-626.2560.1400@1920.-626.2560.1400" timestamp="1601467627755" />
     <state width="938" height="367" key="GridCell.Tab.1.left/0.0.1920.1080@0.0.1920.1080" timestamp="1600864691740" />
-    <state width="938" height="367" key="GridCell.Tab.1.right" timestamp="1600864691740">
-      <screen x="0" y="0" width="1920" height="1080" />
+    <state width="2517" height="482" key="GridCell.Tab.1.right" timestamp="1601467627755">
+      <screen x="1920" y="-626" width="2560" height="1400" />
     </state>
+    <state width="2517" height="482" key="GridCell.Tab.1.right/0.0.1920.1040/1920.-626.2560.1400@1920.-626.2560.1400" timestamp="1601467627755" />
     <state width="938" height="367" key="GridCell.Tab.1.right/0.0.1920.1080@0.0.1920.1080" timestamp="1600864691740" />
-    <state x="2381" y="185" key="SettingsEditor" timestamp="1600625314055">
-      <screen x="1920" y="0" width="1920" height="1080" />
+    <state x="2535" y="-386" key="SettingsEditor" timestamp="1601466590436">
+      <screen x="1920" y="-626" width="2560" height="1400" />
     </state>
+    <state x="2535" y="-386" key="SettingsEditor/0.0.1920.1040/1920.-626.2560.1400@1920.-626.2560.1400" timestamp="1601466590436" />
     <state x="2381" y="185" key="SettingsEditor/0.0.1920.1080/1920.0.1920.1080@1920.0.1920.1080" timestamp="1600625314055" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main.py</url>
+          <line>94</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main.py</url>
+          <line>96</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/Image_colorization_research__BD_$main.coverage" NAME="main Coverage Results" MODIFIED="1601467596604" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
