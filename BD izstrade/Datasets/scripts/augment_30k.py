@@ -5,10 +5,10 @@ from pathlib import Path
 import json
 import random
 
-json_location = r'C:\Users\37120\Documents\BachelorThesis\Bachelor thesis\BD izstrade\Datasets\flickr30k_images_memmap\json_data.json'
-directory = r'C:\Users\37120\Documents\BachelorThesis\Bachelor thesis\BD izstrade\Datasets\flickr30k_images\flickr30k_images'
-out_dir = r'C:\Users\37120\Documents\BachelorThesis\Bachelor thesis\BD izstrade\Datasets\flickr30k_augmented'
-noise_dir = r'C:\Users\37120\Documents\BachelorThesis\Bachelor thesis\BD izstrade\Datasets\noise_data'
+json_location = r'C:\Users\37120\Documents\BachelorThesis\Bachelor thesis\BD izstrade\Datasets\Reference dataset'
+directory = r'C:\Users\37120\Documents\BachelorThesis\lol\flickr30k_images\flickr30k_images'
+out_dir = r'C:\Users\37120\Documents\BachelorThesis\Bachelor thesis\BD izstrade\Datasets\Reference dataset'
+noise_dir = r'C:\Users\37120\Documents\BachelorThesis\noise_data'
 json_data = {'image': []}
 
 
@@ -19,8 +19,11 @@ def file_lengthy(fname):
     return i + 1
 
 
-def save_json():
-    with open(json_location, 'w') as out:
+def save_json(it):
+    path = ''
+    path += json_location
+    path += str(it.real)
+    with open(path, 'w') as out:
         json.dump(json_data, out)
 
 
@@ -67,21 +70,34 @@ def process_file(path, it):
     global dir_new
     image = (Image.open(path)).convert("RGBA")
     image = image.resize((480, 320), Image.ANTIALIAS)
-    dir_new = r'C:\Users\37120\Documents\BachelorThesis\Bachelor thesis\BD izstrade\Datasets\noise_data\\'
-    noise = getRandomFile(noise_dir)
-    dir_new = dir_new + noise + '\\'
-    image2 = Image.open(dir_new + getRandomFile(dir_new)).convert("RGBA")
-    image2 = image2.resize((480, 320), Image.ANTIALIAS)
+    image.putalpha(128)
+    data2 = np.asarray(image)
+    data2 = np.mean(data2, axis=2)
+    check_img = Image.fromarray(data2)
+    check_img.show()
+    dir_new = r'C:\Users\37120\Documents\BachelorThesis\noise_data\\'
+    alpha_noise_add = random.randint(3, 12)
+    for i in range(alpha_noise_add):
+        dir_new = r'C:\Users\37120\Documents\BachelorThesis\noise_data\\'
+        noise = getRandomFile(noise_dir)
+        dir_new = dir_new + noise + '\\'
+        image2 = Image.open(dir_new + getRandomFile(dir_new))
+        image2 = image2.resize((480, 320), Image.ANTIALIAS)
+        image2 = image2.convert("RGBA")
 
-    datas = image2.getdata()
-    newData = []
-    for item in datas:
-        if item[0] > 150 and item[1] > 150 and item[3] > 150:
-            newData.append((255, 255, 255, 0))
-        else:
-            newData.append(item)
-    image2.putdata(newData)
-    image.paste(image2, (0, 0), image2)
+        datas = image2.getdata()
+        newData = []
+        for item in datas:
+            if item[0] > 170 and item[1] > 170 and item[3] > 170:
+                newData.append((255, 255, 255, 0))
+            else:
+                newData.append((item[0], item[1], item[2], random.randint(50, 150)))
+        image2.putdata(newData)
+        image_new = Image.new("RGBA", image.size)
+        image_new = Image.alpha_composite(image_new, image)
+        image_new = Image.alpha_composite(image_new, image2)
+        image = image_new.copy()
+
     brightness_control = ImageEnhance.Brightness(image)
     contrast_control = ImageEnhance.Contrast(image)
     saturation_control = ImageEnhance.Color(image)
@@ -95,7 +111,7 @@ def process_file(path, it):
         contrast_control.enhance(alpha)
 
     if random.randint(0,100) <= 10:  # Gaussian noise
-        alpha = random.uniform(0, 0.04)
+        alpha = random.uniform(0, 0.02)
         ata = np.asarray(image)
         salt_pepper = sp_noise(ata, alpha)
         im2 = Image.fromarray(salt_pepper)
@@ -105,22 +121,29 @@ def process_file(path, it):
         alpha = random.uniform(0.3, 1)
         saturation_control.enhance(alpha)
 
+    if random.randint(0, 100) <= 30:  # Blur
+        alpha = random.uniform(0.3, 1)
+        image = image.filter(ImageFilter.BoxBlur(1))
+
     data = np.asarray(image)
     data = np.mean(data, axis=2)
 
-    img = Image.fromarray(data)
-    img.show()
+    check_img = Image.fromarray(data)
+    check_img.show()
 
     generate_memmap(data.shape, path, data, it)
 
 
 if __name__ == '__main__':
-    for i in range(3):
+    for i in range(1):
         for it, img in enumerate(os.scandir(directory)):
             if img.path.endswith(".jpg") and img.is_file():
                 process_file(img.path, i)
-            if it % 20 == 0:
+            if it % 5 == 0:
                 print(f"{it} out of 30k images finished. {(it / 30000) * 100} % done")
-        save_json()
+            if it == 30:
+                break
+        save_json(i)
         json_data.clear()
+        json_data = {'image': []}
 
