@@ -71,7 +71,6 @@ def process_file(path, it):
     image.putalpha(128)
     data2 = np.asarray(image)
     data2 = np.mean(data2, axis=2)
-    check_img = Image.fromarray(data2)
     dir_new = r'C:\Users\37120\Documents\BachelorThesis\noise_data\\'
     alpha_noise_add = random.randint(3, 8)
     for i in range(alpha_noise_add):

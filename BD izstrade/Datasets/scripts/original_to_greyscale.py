@@ -49,13 +49,13 @@ def process_file(path):
     image = image.resize((480, 320), Image.ANTIALIAS)
     image_lab = color.rgb2lab(image)
     image_lab[..., 1] = image_lab[..., 2] = 0
-    # data = np.asarray(image_lab)
-    # generate_memmap(data.shape, path, data)
-    image_lab = color.lab2rgb(image_lab)
-    plt.figure(figsize=(20, 10))
-    plt.subplot(121), plt.imshow(image), plt.axis('off'), plt.title('Original image', size=20)
-    plt.subplot(122), plt.imshow(image_lab), plt.axis('off'), plt.title('Gray scale image', size=20)
-    plt.show()
+    data = np.asarray(image_lab)
+    generate_memmap(data.shape, path, data)
+    # image_lab = color.lab2rgb(image_lab)
+    # plt.figure(figsize=(20, 10))
+    # plt.subplot(121), plt.imshow(image), plt.axis('off'), plt.title('Original image', size=20)
+    # plt.subplot(122), plt.imshow(image_lab), plt.axis('off'), plt.title('Gray scale image', size=20)
+    # plt.show()
 
 
 if __name__ == '__main__':
