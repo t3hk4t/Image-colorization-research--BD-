@@ -5,10 +5,10 @@ from pathlib import Path
 import json
 import random
 
-json_location = r'C:\Users\37120\Documents\BachelorThesis\Bachelor thesis\BD izstrade\Datasets\Reference dataset'
-directory = r'C:\Users\37120\Documents\BachelorThesis\lol\flickr30k_images\flickr30k_images'
-out_dir = r'C:\Users\37120\Documents\BachelorThesis\Bachelor thesis\BD izstrade\Datasets\Reference dataset'
-noise_dir = r'C:\Users\37120\Documents\BachelorThesis\noise_data'
+json_location = r'C:\Users\37120\Documents\BachelorThesis\Bachelor thesis\BD izstrade\Datasets\Reference dataset' # to be edited
+directory = r'C:\Users\37120\Documents\BachelorThesis\lol\flickr30k_images\flickr30k_images' # to be edited
+out_dir = r'C:\Users\37120\Documents\BachelorThesis\Bachelor thesis\BD izstrade\Datasets\Reference dataset' # to be edited
+noise_dir = r'C:\Users\37120\Documents\BachelorThesis\noise_data' # to be edited
 json_data = {'image': []}
 
 
