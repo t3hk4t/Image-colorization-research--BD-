@@ -2,28 +2,26 @@ import os
 from PIL import Image, ImageEnhance, ImageFilter
 import numpy as np
 from pathlib import Path
+from skimage import color
 import json
+import time
 import random
 
-json_location = r'C:\Users\37120\Documents\BachelorThesis\Bachelor thesis\BD izstrade\Datasets\Reference dataset' # to be edited
-directory = r'C:\Users\37120\Documents\BachelorThesis\lol\flickr30k_images\flickr30k_images' # to be edited
-out_dir = r'C:\Users\37120\Documents\BachelorThesis\Bachelor thesis\BD izstrade\Datasets\Reference dataset' # to be edited
-noise_dir = r'C:\Users\37120\Documents\BachelorThesis\noise_data' # to be edited
-json_data = {'image': []}
+json_location = r'C:\Users\37120\Documents\BachelorThesis\image_data\flickr30k_augmented'
+directory = r'C:\Users\37120\Documents\BachelorThesis\image_data\flickr30k_images\flickr30k_images'
+out_dir = r'C:\Users\37120\Documents\BachelorThesis\image_data\flickr30k_augmented'
+noise_dir = r'C:\Users\37120\Documents\BachelorThesis\noise_data'
 
-
-def file_lengthy(fname):
-    with open(fname) as f:
-        for i, l in enumerate(f):
-            pass
-    return i + 1
+json_data = {
+    'Colorspace': 'CieLab',
+    'image_height': 320,
+    'image_width': 480,
+    'original_images': directory,
+    'image': []}
 
 
 def save_json(it):
-    path = ''
-    path += json_location
-    path += str(it.real)
-    with open(path, 'w') as out:
+    with open(json_location+str(it.real)+r'\\json_data.json', 'a+') as out:
         json.dump(json_data, out)
 
 
@@ -74,9 +72,8 @@ def process_file(path, it):
     data2 = np.asarray(image)
     data2 = np.mean(data2, axis=2)
     check_img = Image.fromarray(data2)
-    check_img.show()
     dir_new = r'C:\Users\37120\Documents\BachelorThesis\noise_data\\'
-    alpha_noise_add = random.randint(3, 12)
+    alpha_noise_add = random.randint(3, 8)
     for i in range(alpha_noise_add):
         dir_new = r'C:\Users\37120\Documents\BachelorThesis\noise_data\\'
         noise = getRandomFile(noise_dir)
@@ -124,13 +121,14 @@ def process_file(path, it):
     if random.randint(0, 100) <= 30:  # Blur
         alpha = random.uniform(0.3, 1)
         image = image.filter(ImageFilter.BoxBlur(1))
-
-    data = np.asarray(image)
-    data = np.mean(data, axis=2)
-
-    check_img = Image.fromarray(data)
-    check_img.show()
-
+    rgb_image = image.convert('RGB')
+    image_lab = color.rgb2lab(rgb_image)
+    image_lab[..., 1] = image_lab[..., 2] = 0
+    # image_rgb = color.lab2rgb(image_lab)
+    # import matplotlib.pyplot as plt
+    # plt.imshow(image_rgb)
+    # plt.show()
+    data = np.asarray(image_lab)
     generate_memmap(data.shape, path, data, it)
 
 
@@ -139,10 +137,9 @@ if __name__ == '__main__':
         for it, img in enumerate(os.scandir(directory)):
             if img.path.endswith(".jpg") and img.is_file():
                 process_file(img.path, i)
-            if it % 5 == 0:
-                print(f"{it} out of 30k images finished. {(it / 30000) * 100} % done")
-            if it == 30:
-                break
+            if it % 10 == 0:
+                print(f"{it} out of 31783 images finished. {(it / 31783) * 100}% done")
+
         save_json(i)
         json_data.clear()
         json_data = {'image': []}
