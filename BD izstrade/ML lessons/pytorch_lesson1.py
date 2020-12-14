@@ -32,6 +32,17 @@ class LossCrossEntropy(torch.nn.Module):
         return -torch.sum(y * torch.log(y_prim + 1e-20))
 
 
+class LossBinaryCrossEntropy(torch.nn.Module):
+    def __init__(self, weights = [1.0, 1.0]):
+        super().__init__()
+        self.weights = weights
+
+    def forward(self, y, y_prim):
+        return -torch.sum(self.weights[0]*y * torch.log(y_prim + 1e-20) +
+                          self.weights[1]*(1.0 - y) * torch.log((1.0-y_prim)+1e-20)
+                          )
+
+
 X, Y = load_iris(
     return_X_y=True
 )
@@ -56,8 +67,10 @@ class DatasetIris(torch.utils.data.Dataset):
         np_x, y_idx = self.samples[idx]
         x = torch.FloatTensor(np_x)
 
-        np_y = np.zeros((3,))
-        np_y[y_idx] = 1.0
+        prob = 0.0
+        if y_idx == 0:
+            prob = 1.0
+        np_y = np.array([prob])
         y = torch.FloatTensor(np_y)
         return x, y
 
@@ -69,8 +82,8 @@ data_loader_train = torch.utils.data.DataLoader(
 )
 
 model = Model()
-loss_func = LossCrossEntropy()
-optimizer = torch.optim.SGD(model.parameters(), lr=1e-2)
+loss_func = LossBinaryCrossEntropy(weights=[1.0, 2.0])
+optimizer = torch.optim.SGD(model.parameters(), lr=1e-1)
 
 losses_train = []
 matric_acc = []
@@ -90,10 +103,7 @@ for epoch in range(1, 100):
         optimizer.zero_grad()
         np_y_prim = y_prim.data.numpy()
         np_y = y.data.numpy()
-        y_prim_idxes = np.argmax(np_y_prim, axis=1)
-        y_idxes = np.argmax(np_y, axis=1)
-
-        acc = np.mean((y_prim_idxes == y_idxes) * 1.0)
+        acc = np.average(np.equal((np_y == 1.0), (np_y_prim > 0.5)) * 1.0)
         acc_epoch.append(acc)
 
     loss = np.mean(losses_epoch)
