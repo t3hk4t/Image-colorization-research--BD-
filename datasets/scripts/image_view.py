@@ -21,7 +21,10 @@ def compare():
 
     with open(augmented_directory + r'\\json_data.json') as json_file:
         augmented_json = json.load(json_file)
-
+    print(len(greyscale_json['image']))
+    filename = greyscale_json['image'][1]['filename']
+    print(filename)
+    return False
     # Print data properties
     colorspace = greyscale_json["Colorspace"]
     height = greyscale_json["image_height"]
@@ -30,6 +33,7 @@ def compare():
     # Comparing images
     for i in range(30):
         filename = greyscale_json['image'][i]['filename']
+        print(filename)
         pre, ext = os.path.splitext(filename)
         filename = pre + r'.jpg'
         image = Image.open(original_directory + r'\\' + filename).convert("RGB")

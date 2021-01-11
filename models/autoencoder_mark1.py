@@ -4,6 +4,7 @@ import matplotlib
 from modules_core import dummy_loader
 import argparse
 from tqdm import tqdm
+from modules import torch_utils
 import time
 from modules import tensorboard_utils
 import os
@@ -57,51 +58,51 @@ class Autoencoder(torch.nn.Module):
         self.encoder = torch.nn.Sequential( #input (1x320x480)
             torch.nn.Conv2d(1, 32, kernel_size=3,padding=1, bias=False), # (32x320x480)
             torch.nn.ReLU(True),
-            #torch.nn.GroupNorm(16, 32),
-            torch.nn.BatchNorm2d(num_features=32),
+            torch.nn.GroupNorm(16, 32),
+            #torch.nn.BatchNorm2d(num_features=32),
             torch.nn.Conv2d(32, 64, kernel_size=4, padding=1, stride=2,bias=False), # (32x160x240)
             torch.nn.ReLU(True),
-            #torch.nn.GroupNorm(32,64),
-            torch.nn.BatchNorm2d(num_features=64),
+            torch.nn.GroupNorm(32,64),
+            #torch.nn.BatchNorm2d(num_features=64),
             torch.nn.Conv2d(64, 64, kernel_size=4, padding=1, stride=2,bias=False), # (64x80x120)
             torch.nn.ReLU(True),
-            #torch.nn.GroupNorm(32, 46),
-            torch.nn.BatchNorm2d(num_features=64),
+            torch.nn.GroupNorm(32, 64),
+            #torch.nn.BatchNorm2d(num_features=64),
             torch.nn.Conv2d(64, 128, kernel_size=8, padding=1, dilation=2, bias=False), # (128x68x108)
             torch.nn.ReLU(True),
-            #torch.nn.GroupNorm(64, 128),
-            torch.nn.BatchNorm2d(num_features=128),
+            torch.nn.GroupNorm(64, 128),
+            #torch.nn.BatchNorm2d(num_features=128),
             torch.nn.Conv2d(128, 128, kernel_size=5, padding=0, dilation=2, stride=1, bias=False), # (128x60x100)
             torch.nn.ReLU(True),
-            #torch.nn.GroupNorm(64, 128),
-            torch.nn.BatchNorm2d(num_features=128),
+            torch.nn.GroupNorm(64, 128),
+            #torch.nn.BatchNorm2d(num_features=128),
             torch.nn.Conv2d(128, 256, kernel_size=4, padding=0,dilation=3,stride=2, bias=False), # (256x26x46)
             torch.nn.ReLU(True),
-            torch.nn.BatchNorm2d(num_features=256),
-            #torch.nn.GroupNorm(128, 256)
+            #torch.nn.BatchNorm2d(num_features=256),
+            torch.nn.GroupNorm(128, 256)
         )
 
         self.decoder = torch.nn.Sequential(
             torch.nn.ConvTranspose2d(256, 128, kernel_size=4, padding=0,dilation=3,stride=2, bias=False),
             torch.nn.ReLU(True),
-            #torch.nn.GroupNorm(64, 128),
-            torch.nn.BatchNorm2d(num_features=128),
+            torch.nn.GroupNorm(64, 128),
+            #torch.nn.BatchNorm2d(num_features=128),
             torch.nn.ConvTranspose2d(128, 128, kernel_size=5, padding=0, dilation=2, stride=1, bias=False),
             torch.nn.ReLU(True),
-            #torch.nn.GroupNorm(64, 128),
-            torch.nn.BatchNorm2d(num_features=128),
+            torch.nn.GroupNorm(64, 128),
+            #torch.nn.BatchNorm2d(num_features=128),
             torch.nn.ConvTranspose2d(128, 64, kernel_size=8, padding=1, dilation=2, bias=False),
             torch.nn.ReLU(True),
-            #torch.nn.GroupNorm(32, 64),
-            torch.nn.BatchNorm2d(num_features=64),
+            torch.nn.GroupNorm(32, 64),
+            #torch.nn.BatchNorm2d(num_features=64),
             torch.nn.ConvTranspose2d(64, 64, kernel_size=4, padding=1, stride=2, bias=False),
             torch.nn.ReLU(True),
-            #torch.nn.GroupNorm(32, 64),
-            torch.nn.BatchNorm2d(num_features=64),
+            torch.nn.GroupNorm(32, 64),
+            #torch.nn.BatchNorm2d(num_features=64),
             torch.nn.ConvTranspose2d(64, 32, kernel_size=4, padding=1, stride=2, bias=False),
             torch.nn.ReLU(True),
-            #torch.nn.GroupNorm(16, 32),
-            torch.nn.BatchNorm2d(num_features=32),
+            torch.nn.GroupNorm(16, 32),
+            #torch.nn.BatchNorm2d(num_features=32),
             torch.nn.ConvTranspose2d(32, 1, kernel_size=3,padding=1, bias=False),
             torch.nn.Sigmoid()
         )
@@ -112,12 +113,11 @@ class Autoencoder(torch.nn.Module):
         out = self.decoder.forward(out)
         return out
 
-def weights_init(m):
-    if isinstance(m, torch.nn.Conv2d):
-        torch.nn.init.xavier_uniform_(m.weight)
 
 model = Autoencoder()
-model.apply(weights_init)
+
+torch_utils.init_parameters(model)
+
 loss_func = torch.nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
 
@@ -145,12 +145,12 @@ for epoch in range(1, args.epochs):
         for sample in tqdm(data_loader):
             x = sample['greyscale_image']
             y = sample['augmented_image']
-
+            x = x.float()
+            y = y.float()
             if USE_CUDA:
                 x = x.cuda()
                 y = y.cuda()
-            x = x.float()
-            y=y.float()
+
             y_prim = model.forward(y)
             loss = loss_func.forward(y_prim, x)
             metrics_epoch[f'{stage}_loss'].append(loss.item()) # Tensor(0.1) => 0.1f
@@ -200,3 +200,5 @@ for epoch in range(1, args.epochs):
 
 summary_writer.close()
 input('quit?')
+
+# TODO - Logging at the end of epoch
