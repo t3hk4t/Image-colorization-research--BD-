@@ -2,8 +2,10 @@ import torch
 import numpy as np
 import matplotlib
 from modules_core import dummy_loader
-import torchvision
+import argparse
 from tqdm import tqdm
+import time
+from modules import tensorboard_utils
 import os
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 matplotlib.use('TkAgg')
@@ -11,66 +13,96 @@ import matplotlib.pyplot as plt
 plt.rcParams["figure.figsize"] = (12,5)
 
 import torch.utils.data
-import scipy.ndimage
+torch.cuda.empty_cache()
+parser = argparse.ArgumentParser(description='Model trainer')
+parser.add_argument('-run_name', default=f'run_{time.time()}', type=str)
+parser.add_argument('-sequence_name', default=f'../../seq_default', type=str)
+parser.add_argument('-is_cuda', default=True, type=lambda x: (str(x).lower() == 'true'))
+parser.add_argument('-learning_rate', default=2e-3, type=float)
+parser.add_argument('-batch_size', default=8, type=int)
+parser.add_argument('-epochs', default=1000, type=int)
+# TODO add more params and make more beautitfull cuz this file is a mess
+args = parser.parse_args()
+
+summary_writer = tensorboard_utils.CustomSummaryWriter(
+    log_dir=f'{args.sequence_name}/{args.run_name}'
+)
 
 
 USE_CUDA = torch.cuda.is_available()
 MAX_LEN = 200 # limit max number of samples otherwise too slow training (on GPU use all samples / for final training)
-#if USE_CUDA:
-#    MAX_LEN = None
+if USE_CUDA:
+    MAX_LEN = None
 
-full_dataset = torch.utils.data.DataLoader(
-    dataset=(dummy_loader.SyntheticNoiseDataset()),
-    batch_size=16,
-    shuffle=True,
+dataset = dummy_loader.SyntheticNoiseDataset(augmented_directory=r'C:\Users\37120\Documents\BachelorThesis\Bachelor thesis\datasets\flickr30k_augmented_test0',
+                                             greyscale_directory=r'C:\Users\37120\Documents\BachelorThesis\Bachelor thesis\datasets\flickr30k_images_greyscale_test')
+train_size = int(0.8 * len(dataset))
+test_size = len(dataset) - train_size
+dataset_train, dataset_test = torch.utils.data.random_split(dataset, [train_size, test_size])
+
+data_loader_train = torch.utils.data.DataLoader(
+    dataset=dataset,
+    batch_size=args.batch_size,
+    shuffle=True
 )
-
-train_size = int(0.8 * len(full_dataset))
-test_size = len(full_dataset) - train_size
-data_loader_train, data_loader_test = torch.utils.data.random_split(full_dataset, [train_size, test_size])
-
+data_loader_test = torch.utils.data.DataLoader(
+    dataset=dataset,
+    batch_size=args.batch_size,
+    shuffle=False
+)
 
 class Autoencoder(torch.nn.Module):
     def __init__(self):
         super().__init__()
-        self.encoder = torch.nn.Sequential(
-            torch.nn.Conv2d(1, 4, kernel_size=5, bias=False),
+        self.encoder = torch.nn.Sequential( #input (1x320x480)
+            torch.nn.Conv2d(1, 32, kernel_size=3,padding=1, bias=False), # (32x320x480)
             torch.nn.ReLU(True),
-            torch.nn.BatchNorm2d(num_features=4),
-            torch.nn.Conv2d(4, 8, kernel_size=4, padding=1, stride=2, bias=False),
+            #torch.nn.GroupNorm(16, 32),
+            torch.nn.BatchNorm2d(num_features=32),
+            torch.nn.Conv2d(32, 64, kernel_size=4, padding=1, stride=2,bias=False), # (32x160x240)
             torch.nn.ReLU(True),
-            torch.nn.BatchNorm2d(num_features=8),
-            torch.nn.Conv2d(8, 8, kernel_size=7, bias=False),
+            #torch.nn.GroupNorm(32,64),
+            torch.nn.BatchNorm2d(num_features=64),
+            torch.nn.Conv2d(64, 64, kernel_size=4, padding=1, stride=2,bias=False), # (64x80x120)
             torch.nn.ReLU(True),
-            torch.nn.BatchNorm2d(num_features=8),
-            torch.nn.Conv2d(8, 16, kernel_size=4, padding=1, stride=2, bias=False),
+            #torch.nn.GroupNorm(32, 46),
+            torch.nn.BatchNorm2d(num_features=64),
+            torch.nn.Conv2d(64, 128, kernel_size=8, padding=1, dilation=2, bias=False), # (128x68x108)
             torch.nn.ReLU(True),
-            torch.nn.BatchNorm2d(num_features=16),
-            torch.nn.Conv2d(16, 16, kernel_size=4, padding=1, bias=False),
+            #torch.nn.GroupNorm(64, 128),
+            torch.nn.BatchNorm2d(num_features=128),
+            torch.nn.Conv2d(128, 128, kernel_size=5, padding=0, dilation=2, stride=1, bias=False), # (128x60x100)
             torch.nn.ReLU(True),
-            torch.nn.BatchNorm2d(num_features=16),
-            torch.nn.Conv2d(16, 32, kernel_size=4, padding=1, stride=2, bias=False),
+            #torch.nn.GroupNorm(64, 128),
+            torch.nn.BatchNorm2d(num_features=128),
+            torch.nn.Conv2d(128, 256, kernel_size=4, padding=0,dilation=3,stride=2, bias=False), # (256x26x46)
             torch.nn.ReLU(True),
-            torch.nn.BatchNorm2d(num_features=32)
+            torch.nn.BatchNorm2d(num_features=256),
+            #torch.nn.GroupNorm(128, 256)
         )
 
         self.decoder = torch.nn.Sequential(
-            torch.nn.ConvTranspose2d(32, 16, kernel_size=4, padding=1, stride=2, bias=False),
+            torch.nn.ConvTranspose2d(256, 128, kernel_size=4, padding=0,dilation=3,stride=2, bias=False),
             torch.nn.ReLU(True),
-            torch.nn.BatchNorm2d(num_features=16),
-            torch.nn.ConvTranspose2d(16, 16, kernel_size=4, padding=1, bias=False),
+            #torch.nn.GroupNorm(64, 128),
+            torch.nn.BatchNorm2d(num_features=128),
+            torch.nn.ConvTranspose2d(128, 128, kernel_size=5, padding=0, dilation=2, stride=1, bias=False),
             torch.nn.ReLU(True),
-            torch.nn.BatchNorm2d(num_features=16),
-            torch.nn.ConvTranspose2d(16, 8, kernel_size=4, padding=1, stride=2, bias=False),
+            #torch.nn.GroupNorm(64, 128),
+            torch.nn.BatchNorm2d(num_features=128),
+            torch.nn.ConvTranspose2d(128, 64, kernel_size=8, padding=1, dilation=2, bias=False),
             torch.nn.ReLU(True),
-            torch.nn.BatchNorm2d(num_features=8),
-            torch.nn.ConvTranspose2d(8, 8, kernel_size=7, bias=False),
+            #torch.nn.GroupNorm(32, 64),
+            torch.nn.BatchNorm2d(num_features=64),
+            torch.nn.ConvTranspose2d(64, 64, kernel_size=4, padding=1, stride=2, bias=False),
             torch.nn.ReLU(True),
-            torch.nn.BatchNorm2d(num_features=8),
-            torch.nn.ConvTranspose2d(8, 4, kernel_size=4, padding=1, stride=2, bias=False),
+            #torch.nn.GroupNorm(32, 64),
+            torch.nn.BatchNorm2d(num_features=64),
+            torch.nn.ConvTranspose2d(64, 32, kernel_size=4, padding=1, stride=2, bias=False),
             torch.nn.ReLU(True),
-            torch.nn.BatchNorm2d(num_features=4),
-            torch.nn.ConvTranspose2d(4, 1, kernel_size=5, bias=False),
+            #torch.nn.GroupNorm(16, 32),
+            torch.nn.BatchNorm2d(num_features=32),
+            torch.nn.ConvTranspose2d(32, 1, kernel_size=3,padding=1, bias=False),
             torch.nn.Sigmoid()
         )
 
@@ -80,10 +112,14 @@ class Autoencoder(torch.nn.Module):
         out = self.decoder.forward(out)
         return out
 
+def weights_init(m):
+    if isinstance(m, torch.nn.Conv2d):
+        torch.nn.init.xavier_uniform_(m.weight)
 
 model = Autoencoder()
+model.apply(weights_init)
 loss_func = torch.nn.MSELoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
 
 if USE_CUDA:
     model = model.cuda()
@@ -96,7 +132,8 @@ for stage in ['train', 'test']:
     ]:
         metrics[f'{stage}_{metric}'] = []
 
-for epoch in range(1, 1000):
+
+for epoch in range(1, args.epochs):
 
     for data_loader in [data_loader_train, data_loader_test]:
         metrics_epoch = {key: [] for key in metrics.keys()}
@@ -112,10 +149,33 @@ for epoch in range(1, 1000):
             if USE_CUDA:
                 x = x.cuda()
                 y = y.cuda()
-
-            y_prim = model.forward(x)
-            loss = loss_func.forward(y_prim, y)
+            x = x.float()
+            y=y.float()
+            y_prim = model.forward(y)
+            loss = loss_func.forward(y_prim, x)
             metrics_epoch[f'{stage}_loss'].append(loss.item()) # Tensor(0.1) => 0.1f
+            summary_writer.add_scalar(
+                tag=f'{stage}_loss',
+                scalar_value=loss.item(),
+                global_step=epoch,
+            )
+
+            if data_loader == data_loader_test:
+                summary_writer.add_hparams(
+                    hparam_dict=args.__dict__,
+                    metric_dict={
+                        'test_loss':loss.item()
+                    }
+                )
+            else:
+                summary_writer.add_hparams(
+                    hparam_dict=args.__dict__,
+                    metric_dict={
+                        'train_loss': loss.item()
+                    }
+                )
+            summary_writer.flush()
+
 
             if data_loader == data_loader_train:
                 loss.backward()
@@ -138,25 +198,5 @@ for epoch in range(1, 1000):
 
         print(f'epoch: {epoch} {" ".join(metrics_strs)}')
 
-    plt.clf()
-    plt.subplot(121) # row col idx
-    plts = []
-    c = 0
-    for key, value in metrics.items():
-        value = scipy.ndimage.gaussian_filter1d(value, sigma=2)
-        plts += plt.plot(value, f'C{c}', label=key)
-        c += 1
-
-    plt.legend(plts, [it.get_label() for it in plts])
-
-    for i, j in enumerate([4, 5, 6, 16,17,18]):
-        plt.subplot(4, 6, j)
-        plt.imshow(x[i][0].T, cmap=plt.get_cmap('Greys'))
-        plt.subplot(4, 6, j+6)
-        plt.imshow(np_y_prim[i][0].T, cmap=plt.get_cmap('Greys'))
-
-    plt.tight_layout(pad=0.5)
-    plt.draw()
-    plt.pause(0.001)
-
+summary_writer.close()
 input('quit?')

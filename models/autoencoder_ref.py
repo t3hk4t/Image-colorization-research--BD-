@@ -7,19 +7,22 @@ import matplotlib
 import torchvision
 from tqdm import tqdm
 import os
-os.environ['KMP_DUPLICATE_LIB_OK']='True'
+
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
-plt.rcParams["figure.figsize"] = (12,5)
+
+plt.rcParams["figure.figsize"] = (12, 5)
 
 import torch.utils.data
 import scipy.misc
 import scipy.ndimage
 
-
 USE_CUDA = torch.cuda.is_available()
-MAX_LEN = 200 # limit max number of samples otherwise too slow training (on GPU use all samples / for final training)
-#if USE_CUDA:
+MAX_LEN = 200  # limit max number of samples otherwise too slow training (on GPU use all samples / for final training)
+
+
+# if USE_CUDA:
 #    MAX_LEN = None
 
 class DatasetEMNIST(torch.utils.data.Dataset):
@@ -27,7 +30,7 @@ class DatasetEMNIST(torch.utils.data.Dataset):
         self.data = torchvision.datasets.EMNIST(
             root='./data',
             train=is_train,
-            split = 'bymerge',
+            split='bymerge',
             download=True
         )
 
@@ -40,19 +43,18 @@ class DatasetEMNIST(torch.utils.data.Dataset):
         data_max = data.max()
         data_min = data.min()
         if data_max != data_min:
-            data =((data-data_min)/(data_max-data_min))
+            data = ((data - data_min) / (data_max - data_min))
         return data
 
     def __getitem__(self, idx):
         pil_x, label_idx = self.data[idx]
-        np_x = np.array(pil_x) # (28, 28)
+        np_x = np.array(pil_x)  # (28, 28)
         np_y = np.array(np_x)
         # make noise
         noise = np.random.rand(*np_x.shape)
-        np_x = np.where(noise < 0.5,0,np_y)
+        np_x = np.where(noise < 0.5, 0, np_y)
 
-
-        np_x = np.expand_dims(np_x, axis=0) # (C, W, H)
+        np_x = np.expand_dims(np_x, axis=0)  # (C, W, H)
         np_x = self.normalize(np_x)
         x = torch.FloatTensor(np_x)
 
@@ -64,7 +66,7 @@ class DatasetEMNIST(torch.utils.data.Dataset):
         np_label[label_idx] = 1.0
 
         label = torch.FloatTensor(np_label)
-        return x,y, label
+        return x, y, label
 
 
 data_loader_train = torch.utils.data.DataLoader(
@@ -79,6 +81,7 @@ data_loader_test = torch.utils.data.DataLoader(
     shuffle=False,
     drop_last=True
 )
+
 
 class LossCrossEntropy(torch.nn.Module):
     def __init__(self):
@@ -132,7 +135,6 @@ class Autoencoder(torch.nn.Module):
             torch.nn.Sigmoid()
         )
 
-
     def forward(self, x):
         out = self.encoder.forward(x)
         out = self.decoder.forward(out)
@@ -171,7 +173,7 @@ for epoch in range(1, 100000):
 
             y_prim = model.forward(x)
             loss = loss_func.forward(y_prim, y)
-            metrics_epoch[f'{stage}_loss'].append(loss.item()) # Tensor(0.1) => 0.1f
+            metrics_epoch[f'{stage}_loss'].append(loss.item())  # Tensor(0.1) => 0.1f
 
             if data_loader == data_loader_train:
                 loss.backward()
@@ -196,7 +198,7 @@ for epoch in range(1, 100000):
         print(f'epoch: {epoch} {" ".join(metrics_strs)}')
 
     plt.clf()
-    plt.subplot(121) # row col idx
+    plt.subplot(121)  # row col idx
     plts = []
     c = 0
     for key, value in metrics.items():
@@ -206,11 +208,11 @@ for epoch in range(1, 100000):
 
     plt.legend(plts, [it.get_label() for it in plts])
 
-    for i, j in enumerate([4, 5, 6, 16,17,18]):
+    for i, j in enumerate([4, 5, 6, 16, 17, 18]):
         plt.subplot(4, 6, j)
         plt.title(f"Class {data_loader.dataset.data.classes[idx_label[i]]}")
         plt.imshow(x[i][0].T, cmap=plt.get_cmap('Greys'))
-        plt.subplot(4, 6, j+6)
+        plt.subplot(4, 6, j + 6)
         plt.imshow(np_y_prim[i][0].T, cmap=plt.get_cmap('Greys'))
 
     plt.tight_layout(pad=0.5)

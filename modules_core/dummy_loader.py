@@ -13,7 +13,7 @@ class SyntheticNoiseDataset(Dataset):
     """Dataset with original and augmented images."""
 
     def __init__(self, transform = True, greyscale_directory = r'C:\Users\37120\Documents\BachelorThesis\image_data\flickr30k_images_greyscale',
-                 augmented_directory = r'C:\Users\37120\Documents\BachelorThesis\image_data\flickr30k_augmented0'):
+                 augmented_directory = r'C:\Users\37120\Documents\BachelorThesis\image_data\flickr30k_augmented_test0'):
         """
         Args:
             greyscale_directory: Directory with all the clean images.
@@ -45,7 +45,7 @@ class SyntheticNoiseDataset(Dataset):
         self.width = self.width_greyscale
 
     def __len__(self):
-        return len(self.greyscale_json['image']) #number of images
+        return len(self.augmented_json['image']) #number of images
 
     def __getitem__(self, idx):
         """
@@ -54,7 +54,7 @@ class SyntheticNoiseDataset(Dataset):
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
-        img_name = self.greyscale_json['image'][idx]['filename']
+        img_name = self.augmented_json['image'][idx]['filename']
         pre, ext = os.path.splitext(img_name)
         greyscale_memmap = np.memmap(self.greyscale_directory + r'\\' + pre + r'.dat', dtype='float16', mode='r',
                                      shape=(self.height, self.width, 3))
@@ -70,19 +70,20 @@ class SyntheticNoiseDataset(Dataset):
 
         return sample
 
-    def show_images(self, greyscale_image, augmented_image):
+    def show_images(self, greyscale_image, augmented_image, batch_size = 4):
         """Show image with landmarks"""
 
-        # TODO - add use tensorflow eval
+        # TODO - Learn list slicing as i am too stupid for python one liners atm
         if self.transform:
-            return True
-            greyscale_image = greyscale_image.eval()
-            augmented_image = augmented_image.eval()
-            greyscale_image = greyscale_image.transpose((2, 0, 1))
-            augmented_image = augmented_image.transpose((2, 0, 1))
+            image1 = np.zeros(shape=(320, 480, 3))
+            image2 = np.zeros(shape=(320, 480, 3))
+            for i in range(320):
+                for j in range(480):
+                    image1[i, j, 0] = greyscale_image[0, 0, i,j]
+                    image2[i, j, 0] = augmented_image[0, 0, i,j]
 
-        image1 = color.lab2rgb(greyscale_image)
-        image2 = color.lab2rgb(augmented_image)
+        image1 = color.lab2rgb(image1)
+        image2 = color.lab2rgb(image2)
         plot_image = np.concatenate((image1, image2), axis=1)
         plt.imshow(plot_image)
         plt.show()
@@ -93,10 +94,14 @@ class SyntheticNoiseDataset(Dataset):
         # swap color axis because
         # numpy image: H x W x C
         # torch image: C X H X W
-        greyscale_image = greyscale_image.transpose((2, 0, 1))
-        augmented_image = augmented_image.transpose((2,0,1))
-        return {'greyscale_image': torch.from_numpy(greyscale_image),
-                'augmented_image': torch.from_numpy(augmented_image)}
+        image1 = np.zeros(shape = (320,480,1))
+        image2 = np.zeros(shape =(320, 480,1))
+        for i in range(320):
+            for j in range(480):
+                image1[i,j,0] = greyscale_image[i,j,0]
+                image2[i, j,0] = augmented_image[i, j, 0]
+        image1= image1.transpose((2, 0, 1))
+        image2 = image2.transpose((2, 0, 1))
 
-
-
+        return {'greyscale_image': torch.from_numpy(image1),
+                'augmented_image': torch.from_numpy(image2)}
