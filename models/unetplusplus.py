@@ -22,17 +22,24 @@ class ResBlock(nn.Module):
         self.in_channels = in_channels
         self.out_channels = out_channels
 
+        num_groups = math.ceil(in_channels/2)
+        if in_channels % 2 == 1:
+            num_groups = num_groups -1
+            if num_groups == 0:
+                num_groups = 1
+
+
         self.conv1 = nn.Conv2d(in_channels, in_channels, kernel_size=kernel_size_first,
                                stride=1,
                                padding=int(kernel_size_first/2), bias=is_conv_bias)
-        self.gn1 = nn.GroupNorm(num_channels=in_channels, num_groups=math.ceil(in_channels/2))
-
+        #self.gn1 = nn.GroupNorm(num_channels=in_channels, num_groups=num_groups)
+        self.bn1 = nn.BatchNorm2d(in_channels)
 
         self.conv2 = nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size,
                                stride=stride,
                                padding=padding, bias=is_conv_bias)
-        self.gn2 = nn.GroupNorm(num_channels=out_channels, num_groups=math.ceil(out_channels/2))
-
+        #self.gn2 = nn.GroupNorm(num_channels=out_channels, num_groups=num_groups)
+        self.bn2 = nn.BatchNorm2d(out_channels)
         self.is_projection = False
         if stride > 1 or in_channels != out_channels:
             self.is_projection = True
@@ -45,7 +52,7 @@ class ResBlock(nn.Module):
 
         out = self.conv1(x)
         out = torch.relu(out)
-        out = self.gn1(out)
+        out = self.bn1(out)
 
         out = self.conv2(out)
 
@@ -54,7 +61,7 @@ class ResBlock(nn.Module):
 
         out += residual
         out = torch.relu(out)
-        out = self.gn2(out)
+        out = self.bn2(out)
 
         return out
 
@@ -101,7 +108,8 @@ class Model(nn.Module):
         torch_utils.init_parameters(self)
 
     def forward(self, input):
-        input = input.unsqueeze(1) #Batch, Channel, Width, Height
+        if len(input.size()) == 3:
+            input = input.unsqueeze(1) #Batch, Channel, Width, Height
 
         # container for output values
         intermediate_outputs = [[]for _ in range(self.depth)]

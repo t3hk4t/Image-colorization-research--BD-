@@ -5,6 +5,7 @@ import torch
 from skimage import color
 import numpy as np
 import json
+from modules import torch_utils
 import matplotlib.pyplot as plt
 from torch.utils.data import Dataset
 
@@ -63,7 +64,14 @@ class SyntheticNoiseDataset(Dataset):
                                      shape=(self.height, self.width, 3))
         augmented_image = np.array(augmented_memmap[:], dtype='float32')
 
-        sample = {'greyscale_image': greyscale_image, 'augmented_image': augmented_image}
+        normalized_greyscale = (greyscale_image - 0) / (
+                100)
+
+        normalized_augmented = (augmented_image - 0) / (
+                100)
+
+
+        sample = {'greyscale_image': normalized_greyscale, 'augmented_image': normalized_augmented}
 
         if self.transform:
             sample = self.toTensor(sample)
@@ -94,12 +102,12 @@ class SyntheticNoiseDataset(Dataset):
         # swap color axis because
         # numpy image: H x W x C
         # torch image: C X H X W
-        image1 = np.zeros(shape = (320,480,1))
-        image2 = np.zeros(shape =(320, 480,1))
+        image1 = np.zeros(shape = (320,480, 1))
+        image2 = np.zeros(shape =(320, 480, 1))
         for i in range(320):
             for j in range(480):
                 image1[i,j,0] = greyscale_image[i,j,0]
-                image2[i, j,0] = augmented_image[i, j, 0]
+                image2[i, j,0] = augmented_image[i, j,0]
         image1= image1.transpose((2, 0, 1))
         image2 = image2.transpose((2, 0, 1))
 
