@@ -1,26 +1,11 @@
-import os
-import unicodedata
-import string
-import glob
-import io
-import torch
-import torch.nn
-import torch.nn.functional as F
-import torch.utils.data
-import random
-import time
-import math
+import matplotlib
+matplotlib.use('Agg')
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
-from tensorboardX.summary import hparams
-from tensorboardX import SummaryWriter
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-import tensorboardX
-import argparse
-import datetime
-import sklearn
-import sklearn.model_selection
+from tensorboardX import SummaryWriter
+from tensorboardX.summary import hparams
+
 
 class CustomSummaryWriter(SummaryWriter):
     def __init__(self, logdir=None, comment='', purge_step=None,
@@ -43,7 +28,7 @@ class CustomSummaryWriter(SummaryWriter):
 
 
 class TensorBoardUtils(object):
-    def __init__(self, tensorboard_writer):
+    def __init__(self, tensorboard_writer: SummaryWriter):
         super(TensorBoardUtils, self).__init__()
         self.tensorboard_writer = tensorboard_writer
 
@@ -52,25 +37,29 @@ class TensorBoardUtils(object):
         plt.clf()
         ax = fig.add_subplot(111)
         ax.set_aspect(1)
-        res = ax.imshow(dataXY, cmap=plt.cm.jet if is_percent_added else plt.cm.binary,
+        res = ax.imshow(dataXY, cmap=plt.cm.Blues if is_percent_added else plt.cm.binary,
                         interpolation='nearest')
 
         width, height = dataXY.shape
 
         if is_percent_added:
+            cmap_min, cmap_max = res.cmap(0), res.cmap(256)
+            thresh = (dataXY.max() + dataXY.min()) / 2.0
             for x in range(width):
                 for y in range(height):
+                    color = cmap_max if dataXY[x][y] < thresh else cmap_min
                     ax.annotate(str(dataXY[x][y]), xy=(y, x),
                                 horizontalalignment='center',
-                                verticalalignment='center')
+                                verticalalignment='center',
+                                color=color)
 
         cb = fig.colorbar(res)
         if ticks is not None:
             plt.xticks(range(width), ticks)
             plt.yticks(range(height), ticks)
 
-        plt.xlabel('Actual class')
-        plt.ylabel('Predicted class')
+        plt.xlabel('Predicted class')
+        plt.ylabel('Actual class')
 
         fig.set_tight_layout(True)
         canvas = FigureCanvas(fig)
@@ -85,7 +74,6 @@ class TensorBoardUtils(object):
         self.tensorboard_writer.add_image(tag=tag, img_tensor=image, global_step=global_step)
 
         plt.close(fig)
-
 
     def addHistogramsTwo(self, data_positives, data_negatives, tag, global_step=0):
         fig = plt.figure()
@@ -111,14 +99,13 @@ class TensorBoardUtils(object):
 
         plt.close(fig)
 
-
     def addPlot2D(self, dataXY, tag, global_step=0):
         dataXY = np.copy(dataXY)
         min_value = np.min(dataXY)
         dataXY += abs(min_value)
 
         max_value = np.max(dataXY)
-        dataXY /= max_value
+        dataXY = dataXY / max_value
 
         dataXY *= 255
         dataXY = dataXY.astype(dtype=np.uint8)
@@ -131,6 +118,29 @@ class TensorBoardUtils(object):
         image = np.swapaxes(image, 2, 1)
         self.tensorboard_writer.add_image(tag=tag, img_tensor=image, global_step=global_step)
 
+    def addImageWith_mask(self, image, mask, tag, global_step=0):
+        image = np.copy(image)
+        min_value = np.min(image)
+        image += abs(min_value)
+
+        max_value = np.max(image)
+        image = image / max_value
+
+        image *= 255
+        image = image.astype(dtype=np.uint8)
+
+        image = np.expand_dims(image, axis=2)
+        image = np.tile(image, (1,1,3))
+
+        # add mask
+        masked_layer = image.copy()
+        masked_layer[np.array(mask, dtype=bool)] = np.array((0,0,100), dtype=np.uint8)
+        image = np.array(image * 0.5 + masked_layer * 0.5, dtype=np.uint8)
+
+        image = np.swapaxes(image, 2, 0)
+        image = np.swapaxes(image, 2, 1)
+
+        self.tensorboard_writer.add_image(tag=tag, img_tensor=image, global_step=global_step)
 
     def addPlot1D(self, data, tag, global_step=0, axis_labels=None):
         data = np.copy(data)
@@ -157,3 +167,7 @@ class TensorBoardUtils(object):
         self.tensorboard_writer.add_image(tag=tag, img_tensor=image, global_step=global_step)
 
         plt.close(fig)
+
+    def addAudio(self, data, tag, global_step=0, sample_rate=16000):
+        data = np.copy(data)
+        self.tensorboard_writer.add_audio(tag=tag, snd_tensor=data, global_step=global_step, sample_rate=sample_rate)

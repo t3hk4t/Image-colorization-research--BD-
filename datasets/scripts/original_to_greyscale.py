@@ -6,9 +6,9 @@ from skimage import color
 import matplotlib.pyplot as plt
 import json
 
-json_location = r'C:\Users\37120\Documents\BachelorThesis\image_data\flickr30k_images_greyscale\json_data.json'
+json_location = r'C:\Users\37120\Documents\BachelorThesis\image_data\flickr30k_images_greyscale_test\json_data.json'
 directory = r'C:\Users\37120\Documents\BachelorThesis\image_data\flickr30k_images\flickr30k_images'
-out_dir = r'C:\Users\37120\Documents\BachelorThesis\image_data\flickr30k_images_greyscale'
+out_dir = r'C:\Users\37120\Documents\BachelorThesis\image_data\flickr30k_images_greyscale_test'
 json_data = {
     'Colorspace': 'CieLab',
     'image_height': 320,
@@ -64,4 +64,6 @@ if __name__ == '__main__':
             process_file(img.path)
         if it%20 == 0:
             print(f"{it} out of 30k images finished. {(it/31783) * 100} % done")
+        if it == 100:
+            break
     save_json()

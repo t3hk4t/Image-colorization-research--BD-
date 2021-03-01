@@ -7,9 +7,9 @@ import json
 import time
 import random
 
-json_location = r'C:\Users\37120\Documents\BachelorThesis\image_data\flickr30k_augmented'
+json_location = r'C:\Users\37120\Documents\BachelorThesis\image_data\flickr30k_augmented_test'
 directory = r'C:\Users\37120\Documents\BachelorThesis\image_data\flickr30k_images\flickr30k_images'
-out_dir = r'C:\Users\37120\Documents\BachelorThesis\image_data\flickr30k_augmented'
+out_dir = r'C:\Users\37120\Documents\BachelorThesis\image_data\flickr30k_augmented_test'
 noise_dir = r'C:\Users\37120\Documents\BachelorThesis\noise_data'
 
 json_data = {
@@ -138,6 +138,8 @@ if __name__ == '__main__':
                 process_file(img.path, i)
             if it % 10 == 0:
                 print(f"{it} out of 31783 images finished. {(it / 31783) * 100}% done")
+            if it == 100:
+                break
 
         save_json(i)
         json_data.clear()
