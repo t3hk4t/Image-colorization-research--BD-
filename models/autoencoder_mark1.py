@@ -34,8 +34,8 @@ MAX_LEN = 200 # limit max number of samples otherwise too slow training (on GPU 
 if USE_CUDA:
     MAX_LEN = None
 
-dataset = dummy_loader.SyntheticNoiseDataset(augmented_directory=r'C:\Users\37120\Documents\BachelorThesis\Bachelor thesis\datasets\flickr30k_augmented_test0',
-                                             greyscale_directory=r'C:\Users\37120\Documents\BachelorThesis\Bachelor thesis\datasets\flickr30k_images_greyscale_test')
+dataset = dummy_loader.SyntheticNoiseDataset(augmented_directory=r'C:\Users\vecin\Documents\PycharmProjects\Research\Image-colorization-research--BD-\datasets\flickr30k_augmented_test0',
+                                             greyscale_directory=r'C:\Users\vecin\Documents\PycharmProjects\Research\Image-colorization-research--BD-\datasets\flickr30k_images_greyscale_test')
 train_size = int(0.8 * len(dataset))
 test_size = len(dataset) - train_size
 dataset_train, dataset_test = torch.utils.data.random_split(dataset, [train_size, test_size])
@@ -61,7 +61,7 @@ class Autoencoder(torch.nn.Module):
             torch.nn.BatchNorm2d(num_features=32),
             torch.nn.Conv2d(32, 64, kernel_size=4, padding=1, stride=2,bias=False), # (32x160x240)
             torch.nn.ReLU(True),
-            #torch.nn.GroupNorm(32,64),
+            torch.nn.GroupNorm(32,64),
             torch.nn.BatchNorm2d(num_features=64),
             torch.nn.Conv2d(64, 64, kernel_size=4, padding=1, stride=2,bias=False), # (64x80x120)
             torch.nn.ReLU(True),
@@ -150,37 +150,25 @@ for epoch in range(1, args.epochs):
                 x = x.cuda()
                 y = y.cuda()
             x = x.float()
-            y=y.float()
-            y_prim = model.forward(y)
-            loss = loss_func.forward(y_prim, x)
+            y = y.float()
+
+            if data_loader == data_loader_train:
+                y_prim = model.forward(y)
+                loss = loss_func.forward(y_prim, x)
+                loss.backward()
+                optimizer.step()
+                optimizer.zero_grad()
+            else:
+                with torch.no_grad():
+                    y_prim = model.forward(y)
+                    loss = loss_func.forward(y_prim, x)
+
             metrics_epoch[f'{stage}_loss'].append(loss.item()) # Tensor(0.1) => 0.1f
             summary_writer.add_scalar(
                 tag=f'{stage}_loss',
                 scalar_value=loss.item(),
                 global_step=epoch,
             )
-
-            if data_loader == data_loader_test:
-                summary_writer.add_hparams(
-                    hparam_dict=args.__dict__,
-                    metric_dict={
-                        'test_loss':loss.item()
-                    }
-                )
-            else:
-                summary_writer.add_hparams(
-                    hparam_dict=args.__dict__,
-                    metric_dict={
-                        'train_loss': loss.item()
-                    }
-                )
-            summary_writer.flush()
-
-
-            if data_loader == data_loader_train:
-                loss.backward()
-                optimizer.step()
-                optimizer.zero_grad()
 
             loss = loss.cpu()
             y_prim = y_prim.cpu()
