@@ -10,7 +10,7 @@ import modules.torch_utils as torch_utils
 # pre-activated relu
 # modified version of modules.block_resnet_2d_std2_new with different skip conv, because stride set to 1
 class ResBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, is_conv_bias=False, kernel_size=3, stride=1):
+    def __init__(self, in_channels, out_channels, is_conv_bias=False, kernel_size=3, stride=1, is_first_layer=False):
         super().__init__()
 
         kernel_size_first = kernel_size
@@ -22,24 +22,22 @@ class ResBlock(nn.Module):
         self.in_channels = in_channels
         self.out_channels = out_channels
 
-        num_groups = math.ceil(in_channels/2)
-        if in_channels % 2 == 1:
-            num_groups = num_groups -1
-            if num_groups == 0:
-                num_groups = 1
-
-
         self.conv1 = nn.Conv2d(in_channels, in_channels, kernel_size=kernel_size_first,
                                stride=1,
                                padding=int(kernel_size_first/2), bias=is_conv_bias)
-        #self.gn1 = nn.GroupNorm(num_channels=in_channels, num_groups=num_groups)
-        self.bn1 = nn.BatchNorm2d(in_channels)
+
+        # added hack for images with channel count not dividable by 2
+        num_groups = math.ceil(in_channels/2)
+        if is_first_layer:
+            num_groups = in_channels
+        self.gn1 = nn.GroupNorm(num_channels=in_channels, num_groups=num_groups)
+
 
         self.conv2 = nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size,
                                stride=stride,
                                padding=padding, bias=is_conv_bias)
-        #self.gn2 = nn.GroupNorm(num_channels=out_channels, num_groups=num_groups)
-        self.bn2 = nn.BatchNorm2d(out_channels)
+        self.gn2 = nn.GroupNorm(num_channels=out_channels, num_groups=math.ceil(out_channels/2))
+
         self.is_projection = False
         if stride > 1 or in_channels != out_channels:
             self.is_projection = True

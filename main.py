@@ -11,6 +11,9 @@ import torchvision
 import time
 import sys
 from modules import tensorboard_utils
+
+import torchnet as tnt  # pip install git+https://github.com/pytorch/tnt.git@master
+
 import os
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 matplotlib.use('TkAgg')
@@ -136,8 +139,22 @@ epoch_train_loss = 0.0
 running_test_loss = 0.0
 running_train_loss = 0
 
+
+# todo complete state and meters for your metrics
+state = {
+    'train_loss': -1,
+    'test_loss': -1
+}
+
+meters = dict(
+    train_loss=tnt.meter.AverageValueMeter(),
+    test_loss=tnt.meter.AverageValueMeter(),
+)
+
 i= 0
 for epoch in range(1, args.epochs):
+    for key in meters.keys():
+        meters[key].reset()
 
     for data_loader in [dataset_train, dataset_test]:
         metrics_epoch = {key: [] for key in metrics.keys()}
@@ -165,6 +182,7 @@ for epoch in range(1, args.epochs):
             else:
                 running_test_loss += loss.item()
 
+            meters[f'{stage}_loss'].add(np.average(loss.item()))
             if data_loader == dataset_train:
                 loss.backward()
                 optimizer.step()
@@ -196,6 +214,7 @@ for epoch in range(1, args.epochs):
             n_total_steps+=1
 
 
+        state[f'{stage}_loss'] = meters[f'{stage}_loss'].value()[0]
         metrics_strs = []
         for key in metrics_epoch.keys():
             if stage in key:
