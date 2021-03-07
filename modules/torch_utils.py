@@ -47,3 +47,21 @@ def normalize_output(output_emb, embedding_norm):
     else: # none
         output_norm = output_emb
     return output_norm
+
+def toTensor(sample):
+    greyscale_image, augmented_image = sample['greyscale_image'], sample['augmented_image']
+
+    # swap color axis because
+    # numpy image: H x W x C
+    # torch image: C X H X W
+    image1 = np.zeros(shape = (320,480, 1))
+    image2 = np.zeros(shape =(320, 480, 1))
+    for i in range(320):
+        for j in range(480):
+            image1[i,j,0] = greyscale_image[i,j,0]
+            image2[i, j,0] = augmented_image[i, j,0]
+    image1= image1.transpose((2, 0, 1))
+    image2 = image2.transpose((2, 0, 1))
+
+    return {'greyscale_image': torch.from_numpy(image1),
+            'augmented_image': torch.from_numpy(image2)}

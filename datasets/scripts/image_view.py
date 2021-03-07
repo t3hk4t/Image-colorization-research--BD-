@@ -12,6 +12,23 @@ augmented_directory = r'C:\Users\37120\Documents\BachelorThesis\image_data\flick
 original_directory = r'C:\Users\37120\Documents\BachelorThesis\image_data\flickr30k_images\flickr30k_images'
 greyscale_directory = r'C:\Users\37120\Documents\BachelorThesis\image_data\flickr30k_images_greyscale'
 
+# def show_images(self, greyscale_image, augmented_image, batch_size = 4):
+    #     """Show image with landmarks"""
+    #
+    #     # TODO - Learn list slicing as i am too stupid for python one liners atm
+    #     if self.transform:
+    #         image1 = np.zeros(shape=(320, 480, 3))
+    #         image2 = np.zeros(shape=(320, 480, 3))
+    #         for i in range(320):
+    #             for j in range(480):
+    #                 image1[i, j, 0] = greyscale_image[0, 0, i,j]
+    #                 image2[i, j, 0] = augmented_image[0, 0, i,j]
+    #
+    #     image1 = color.lab2rgb(image1)
+    #     image2 = color.lab2rgb(image2)
+    #     plot_image = np.concatenate((image1, image2), axis=1)
+    #     plt.imshow(plot_image)
+    #     plt.show()
 
 # Every memmap file is in cielab colorspace.
 # To compare images we need to convert them to rgb
