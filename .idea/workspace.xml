@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="2d80a536-6ea8-4c98-a23a-0c3073bc0c7b" name="Default Changelist" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="JupyterTrust" id="c8744f23-4374-47b3-95ad-763c155ef130" />
+  <component name="ProjectId" id="1mtHm5J7bUQfvdqg2RSAKVXngW8" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/modules" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\37120\Documents\BachelorThesis\Bachelor thesis\dataset_modules" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\37120\Documents\BachelorThesis\Bachelor thesis\modules" />
+      <recent name="C:\Users\37120\Documents\BachelorThesis\Bachelor thesis\models" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.main">
+    <configuration name="augment_30k (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Bachelor_thesis" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/datasets/scripts" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/datasets/scripts/augment_30k.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="autoencoder_mark1" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Bachelor_thesis" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/models" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/models/autoencoder_mark1.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="examens" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Bachelor_thesis" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/examens.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Bachelor_thesis" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="original_to_greyscale (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Bachelor_thesis" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/datasets/scripts" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/datasets/scripts/original_to_greyscale.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.main" />
+        <item itemvalue="Python.original_to_greyscale (1)" />
+        <item itemvalue="Python.augment_30k (1)" />
+        <item itemvalue="Python.examens" />
+        <item itemvalue="Python.autoencoder_mark1" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="2d80a536-6ea8-4c98-a23a-0c3073bc0c7b" name="Default Changelist" comment="" />
+      <created>1610206823930</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1610206823930</updated>
+      <workItem from="1610206824948" duration="37702000" />
+      <workItem from="1610306126483" duration="2640000" />
+      <workItem from="1610308841843" duration="5453000" />
+      <workItem from="1610315131351" duration="12594000" />
+      <workItem from="1610558670954" duration="19313000" />
+      <workItem from="1612361540949" duration="3976000" />
+      <workItem from="1614427929175" duration="9321000" />
+      <workItem from="1614629178081" duration="21702000" />
+      <workItem from="1615106907534" duration="8159000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="731" y="342" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1610368646352">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state x="731" y="342" key="#com.intellij.fileTypes.FileTypeChooser/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1610368646352" />
+    <state x="690" y="287" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1610373576166">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state x="690" y="287" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1610373576166" />
+    <state width="1875" height="166" key="GridCell.Tab.0.bottom" timestamp="1615114733686">
+      <screen x="-1920" y="140" width="1920" height="1080" />
+    </state>
+    <state width="1875" height="166" key="GridCell.Tab.0.bottom/0.0.1920.1080/-1920.140.1920.1080@-1920.140.1920.1080" timestamp="1615114733686" />
+    <state width="1875" height="392" key="GridCell.Tab.0.bottom/0.0.1920.1080/-1920.140.1920.1080@0.0.1920.1080" timestamp="1614724459289" />
+    <state width="1875" height="392" key="GridCell.Tab.0.bottom/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1610654881973" />
+    <state width="1875" height="323" key="GridCell.Tab.0.bottom/0.0.1920.1080/1920.0.1920.1080@1920.0.1920.1080" timestamp="1610616409752" />
+    <state width="1875" height="392" key="GridCell.Tab.0.bottom/0.0.1920.1080/1920.0.1920.1200@1920.0.1920.1200" timestamp="1610981159906" />
+    <state width="1875" height="392" key="GridCell.Tab.0.bottom/0.0.1920.1080@0.0.1920.1080" timestamp="1611576731293" />
+    <state width="1875" height="166" key="GridCell.Tab.0.center" timestamp="1615114733686">
+      <screen x="-1920" y="140" width="1920" height="1080" />
+    </state>
+    <state width="1875" height="166" key="GridCell.Tab.0.center/0.0.1920.1080/-1920.140.1920.1080@-1920.140.1920.1080" timestamp="1615114733686" />
+    <state width="1875" height="392" key="GridCell.Tab.0.center/0.0.1920.1080/-1920.140.1920.1080@0.0.1920.1080" timestamp="1614724459289" />
+    <state width="1875" height="392" key="GridCell.Tab.0.center/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1610654881973" />
+    <state width="1875" height="323" key="GridCell.Tab.0.center/0.0.1920.1080/1920.0.1920.1080@1920.0.1920.1080" timestamp="1610616409752" />
+    <state width="1875" height="392" key="GridCell.Tab.0.center/0.0.1920.1080/1920.0.1920.1200@1920.0.1920.1200" timestamp="1610981159905" />
+    <state width="1875" height="392" key="GridCell.Tab.0.center/0.0.1920.1080@0.0.1920.1080" timestamp="1611576731293" />
+    <state width="1875" height="166" key="GridCell.Tab.0.left" timestamp="1615114733685">
+      <screen x="-1920" y="140" width="1920" height="1080" />
+    </state>
+    <state width="1875" height="166" key="GridCell.Tab.0.left/0.0.1920.1080/-1920.140.1920.1080@-1920.140.1920.1080" timestamp="1615114733685" />
+    <state width="1875" height="392" key="GridCell.Tab.0.left/0.0.1920.1080/-1920.140.1920.1080@0.0.1920.1080" timestamp="1614724459289" />
+    <state width="1875" height="392" key="GridCell.Tab.0.left/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1610654881973" />
+    <state width="1875" height="323" key="GridCell.Tab.0.left/0.0.1920.1080/1920.0.1920.1080@1920.0.1920.1080" timestamp="1610616409752" />
+    <state width="1875" height="392" key="GridCell.Tab.0.left/0.0.1920.1080/1920.0.1920.1200@1920.0.1920.1200" timestamp="1610981159905" />
+    <state width="1875" height="392" key="GridCell.Tab.0.left/0.0.1920.1080@0.0.1920.1080" timestamp="1611576731293" />
+    <state width="1875" height="166" key="GridCell.Tab.0.right" timestamp="1615114733686">
+      <screen x="-1920" y="140" width="1920" height="1080" />
+    </state>
+    <state width="1875" height="166" key="GridCell.Tab.0.right/0.0.1920.1080/-1920.140.1920.1080@-1920.140.1920.1080" timestamp="1615114733686" />
+    <state width="1875" height="392" key="GridCell.Tab.0.right/0.0.1920.1080/-1920.140.1920.1080@0.0.1920.1080" timestamp="1614724459289" />
+    <state width="1875" height="392" key="GridCell.Tab.0.right/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1610654881973" />
+    <state width="1875" height="323" key="GridCell.Tab.0.right/0.0.1920.1080/1920.0.1920.1080@1920.0.1920.1080" timestamp="1610616409752" />
+    <state width="1875" height="392" key="GridCell.Tab.0.right/0.0.1920.1080/1920.0.1920.1200@1920.0.1920.1200" timestamp="1610981159905" />
+    <state width="1875" height="392" key="GridCell.Tab.0.right/0.0.1920.1080@0.0.1920.1080" timestamp="1611576731293" />
+    <state width="1875" height="364" key="GridCell.Tab.1.bottom" timestamp="1610434043143">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1875" height="364" key="GridCell.Tab.1.bottom/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1610434043143" />
+    <state width="1875" height="364" key="GridCell.Tab.1.center" timestamp="1610434043143">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1875" height="364" key="GridCell.Tab.1.center/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1610434043143" />
+    <state width="1875" height="364" key="GridCell.Tab.1.left" timestamp="1610434043143">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1875" height="364" key="GridCell.Tab.1.left/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1610434043143" />
+    <state width="1875" height="364" key="GridCell.Tab.1.right" timestamp="1610434043143">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1875" height="364" key="GridCell.Tab.1.right/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1610434043143" />
+    <state x="605" y="204" key="SettingsEditor" timestamp="1610222109538">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state x="605" y="204" key="SettingsEditor/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1610222109538" />
+    <state x="455" y="168" width="1136" height="716" key="dock-window-1" timestamp="1610579225735">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state x="455" y="168" width="1136" height="716" key="dock-window-1/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1610579225735" />
+    <state x="2210" y="-13" width="836" height="568" key="dock-window-2" timestamp="1610225289300">
+      <screen x="1920" y="0" width="1920" height="1080" />
+    </state>
+    <state x="2210" y="-13" width="836" height="568" key="dock-window-2/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1610225289300" />
+    <state x="706" y="300" width="672" height="678" key="search.everywhere.popup" timestamp="1610224455256">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state x="706" y="300" width="672" height="678" key="search.everywhere.popup/0.0.1920.1080/1920.0.1920.1080@0.0.1920.1080" timestamp="1610224455256" />
+  </component>
+  <component name="XDebuggerManager">
+    <watches-manager>
+      <configuration name="PythonConfigurationType">
+        <watch expression="x.dt" language="Python" />
+        <watch expression="x.dtype" language="Python" />
+      </configuration>
+    </watches-manager>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/Bachelor_thesis$autoencoder.coverage" NAME="autoencoder Coverage Results" MODIFIED="1610217796531" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/models" />
+    <SUITE FILE_PATH="coverage/Bachelor_thesis$autoencoder_ref__1_.coverage" NAME="autoencoder_ref (1) Coverage Results" MODIFIED="1610221670223" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/models" />
+    <SUITE FILE_PATH="coverage/Bachelor_thesis$augment_30k.coverage" NAME="augment_30k Coverage Results" MODIFIED="1610314952909" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/BD izstrade/Datasets/scripts" />
+    <SUITE FILE_PATH="coverage/Bachelor_thesis$examens.coverage" NAME="examens Coverage Results" MODIFIED="1610617878320" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Bachelor_thesis$image_view.coverage" NAME="image_view Coverage Results" MODIFIED="1610223712859" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/BD izstrade/Datasets/scripts" />
+    <SUITE FILE_PATH="coverage/Bachelor_thesis$dummy_model.coverage" NAME="synthetic_viewer Coverage Results" MODIFIED="1610227809607" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/modules_core" />
+    <SUITE FILE_PATH="coverage/Bachelor_thesis$augment_30k__1_.coverage" NAME="augment_30k (1) Coverage Results" MODIFIED="1614724459114" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/datasets/scripts" />
+    <SUITE FILE_PATH="coverage/Bachelor_thesis$original_to_greyscale.coverage" NAME="original_to_greyscale Coverage Results" MODIFIED="1610314798562" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/BD izstrade/Datasets/scripts" />
+    <SUITE FILE_PATH="coverage/Bachelor_thesis$original_to_greyscale__1_.coverage" NAME="original_to_greyscale (1) Coverage Results" MODIFIED="1615106909559" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/datasets/scripts" />
+    <SUITE FILE_PATH="coverage/Bachelor_thesis$synthetic_viewer__1_.coverage" NAME="synthetic_viewer (1) Coverage Results" MODIFIED="1610367139790" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/modules_core" />
+    <SUITE FILE_PATH="coverage/Bachelor_thesis$main.coverage" NAME="main Coverage Results" MODIFIED="1615114733678" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Bachelor_thesis$dummy_loader.coverage" NAME="dummy_loader Coverage Results" MODIFIED="1610288492164" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/modules_core" />
+    <SUITE FILE_PATH="coverage/Bachelor_thesis$autoencoder_ref.coverage" NAME="autoencoder_ref Coverage Results" MODIFIED="1610297170699" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/models" />
+    <SUITE FILE_PATH="coverage/Bachelor_thesis$autoencoder_mark1.coverage" NAME="autoencoder_mark1 Coverage Results" MODIFIED="1610373069676" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/models" />
+  </component>
+</project>
