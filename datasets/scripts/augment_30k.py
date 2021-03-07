@@ -7,12 +7,24 @@ import json
 import time
 import random
 
-json_location = r'C:\Users\37120\Documents\BachelorThesis\image_data\flickr30k_augmented_test'
 directory = r'C:\Users\37120\Documents\BachelorThesis\image_data\flickr30k_images\flickr30k_images'
-out_dir = r'C:\Users\37120\Documents\BachelorThesis\image_data\flickr30k_augmented_test'
 noise_dir = r'C:\Users\37120\Documents\BachelorThesis\noise_data'
 
-json_data = {
+json_location_train = r'C:\Users\37120\Documents\BachelorThesis\image_data\flick30k_10_augmented_train'
+out_dir_train = r'C:\Users\37120\Documents\BachelorThesis\image_data\flick30k_10_augmented_train'
+
+json_location_test = r'C:\Users\37120\Documents\BachelorThesis\image_data\flick30k_10_augmented_test'
+out_dir_test = r'C:\Users\37120\Documents\BachelorThesis\image_data\flick30k_10_augmented_test'
+
+
+json_data_train = {
+    'Colorspace': 'CieLab',
+    'image_height': 320,
+    'image_width': 480,
+    'original_images': directory,
+    'image': []}
+
+json_data_test = {
     'Colorspace': 'CieLab',
     'image_height': 320,
     'image_width': 480,
@@ -20,27 +32,49 @@ json_data = {
     'image': []}
 
 
-def save_json(it):
-    with open(json_location+str(it.real)+r'\\json_data.json', 'a+') as out:
-        json.dump(json_data, out)
+def save_json_train(it):
+    with open(json_location_train+r'\\train.json', 'a+') as out:
+        json.dump(json_data_train, out)
+
+def save_json_test(it):
+    with open(json_location_test+r'\\test.json', 'a+') as out:
+        json.dump(json_data_test, out)
 
 
-def generate_memmap(shape, path, image: np.ndarray, it):
-    path2 = out_dir+str(it.real)
-    if not os.path.exists(path2):
-        os.makedirs(path2)
 
-    filename = Path(path).stem
-    filename = filename + '.dat'
-    filename = path2 + r'\\' + filename
-    json_data['image'].append({
-        'filename': os.path.basename(filename),
-        'location': filename,
-        'shape': shape
-    })
-    fp = np.memmap(filename, dtype='float16', mode='w+', shape=shape)
-    fp[:] = image[:]
-    del fp
+def generate_memmap(shape, path, image: np.ndarray, it, train = True):
+    if train:
+        path2 = out_dir_train + str(it.real)
+        if not os.path.exists(path2):
+            os.makedirs(path2)
+
+        filename = Path(path).stem
+        filename = filename + '.dat'
+        filename = path2 + r'\\' + filename
+        json_data_train['image'].append({
+            'filename': os.path.basename(filename),
+            'location': filename,
+            'shape': shape
+        })
+        fp = np.memmap(filename, dtype='float16', mode='w+', shape=shape)
+        fp[:] = image[:]
+        del fp
+    else:
+        path2 = out_dir_test + str(it.real)
+        if not os.path.exists(path2):
+            os.makedirs(path2)
+
+        filename = Path(path).stem
+        filename = filename + '.dat'
+        filename = path2 + r'\\' + filename
+        json_data_test['image'].append({
+            'filename': os.path.basename(filename),
+            'location': filename,
+            'shape': shape
+        })
+        fp = np.memmap(filename, dtype='float16', mode='w+', shape=shape)
+        fp[:] = image[:]
+        del fp
 
 
 def getRandomFile(path):
@@ -64,7 +98,7 @@ def sp_noise(image,prob):
     return output
 
 
-def process_file(path, it):
+def process_file(path, it, train = True):
     global dir_new
     image = (Image.open(path)).convert("RGBA")
     image = image.resize((480, 320), Image.ANTIALIAS)
@@ -125,23 +159,46 @@ def process_file(path, it):
     image_lab[..., 1] = image_lab[..., 2] = 0
     # image_rgb = color.lab2rgb(image_lab)
     # import matplotlib.pyplot as plt
-    # plt.imshow(image_rgb)
+    # plt.imshow(image_rgbS
     # plt.show()
     data = np.asarray(image_lab)
-    generate_memmap(data.shape, path, data, it)
+    if train:
+        generate_memmap(data.shape, path, data, it, True)
+    else:
+        generate_memmap(data.shape, path, data, it, False)
+
 
 
 if __name__ == '__main__':
+
     for i in range(1):
+        save_train = False
         for it, img in enumerate(os.scandir(directory)):
             if img.path.endswith(".jpg") and img.is_file():
-                process_file(img.path, i)
-            if it % 10 == 0:
-                print(f"{it} out of 31783 images finished. {(it / 31783) * 100}% done")
-            if it == 100:
-                break
+                if it < 31783 * 0.85:
+                    process_file(img.path, True)
+                else:
+                    if save_train is False:
+                        save_json_train(i)
+                        save_train = True
+                    process_file(img.path, False)
+            if it % 100 == 0:
+                print(f"{it} out of 30k images finished. {(it / 31783) * 100} % done")
+        save_json_test(i)
+        json_data_train.clear()
+        json_data_test.clear()
 
-        save_json(i)
-        json_data.clear()
-        json_data = {'image': []}
+        json_data_train = {
+            'Colorspace': 'CieLab',
+            'image_height': 320,
+            'image_width': 480,
+            'original_images': directory,
+            'image': []}
+
+        json_data_test = {
+            'Colorspace': 'CieLab',
+            'image_height': 320,
+            'image_width': 480,
+            'original_images': directory,
+            'image': []}
 
