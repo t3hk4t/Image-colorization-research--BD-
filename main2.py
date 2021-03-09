@@ -25,12 +25,14 @@ def main():
     parser.add_argument('-is_cuda', default=True, type=lambda x: (str(x).lower() == 'true'))
     parser.add_argument('-learning_rate', default=1e-4, type=float)
     parser.add_argument('-batch_size', default=2, type=int)
+    parser.add_argument('-path_train', default=[r'C:\Users\37120\Documents\BachelorThesis\image_data\dataset_test_1\train'], nargs='*')
+    parser.add_argument('-path_test', default=[r'C:\Users\37120\Documents\BachelorThesis\image_data\dataset_test_1\test'], nargs='*')
     parser.add_argument('-data_workers', default=1, type=int)
     parser.add_argument('-epochs', default=1000, type=int)
     parser.add_argument('-is_deep_supervision', default=True, type=bool)
     parser.add_argument('-unet_depth', default=5, type=int)
     parser.add_argument('-first_conv_channel_count', default=8, type=int)
-    parser.add_argument('-expansion_rate', default=3, type=int)
+    parser.add_argument('-expansion_rate', default=2, type=int)
     # TODO add more params and make more beautitfull cuz this file is a mess
     args = parser.parse_args()
 
@@ -100,8 +102,16 @@ def main():
                 if USE_CUDA:
                     x = x.cuda()
                     y = y.cuda()
-                y_prim = model.forward(x)
-                loss = loss_func.forward(y_prim, y)
+
+                if data_loader == data_loader_train:
+                    optimizer.zero_grad()
+                    model.zero_grad()
+                    y_prim = model.forward(x)
+                    loss = loss_func.forward(y_prim, y)
+                else:
+                    with torch.no_grad():
+                        y_prim = model.forward(x)
+                        loss = loss_func.forward(y_prim, y)
                 metrics_epoch[f'{stage}_loss'].append(loss.item())  # Tensor(0.1) => 0.1f
 
                 if data_loader == data_loader_train:

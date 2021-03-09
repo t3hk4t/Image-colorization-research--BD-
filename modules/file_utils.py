@@ -18,9 +18,10 @@ class FileUtils(object):
         while True:
             try:
                 if platform.system() == PLATFORM_WINDOWS:
-                    hfile = win32file._get_osfhandle(f.fileno())
-                    win32file.LockFileEx(hfile, win32con.LOCKFILE_FAIL_IMMEDIATELY | win32con.LOCKFILE_EXCLUSIVE_LOCK,
-                                         0, 0xffff0000, pywintypes.OVERLAPPED())
+                    # hfile = win32file._get_osfhandle(f.fileno())
+                    # win32file.LockFileEx(hfile, win32con.LOCKFILE_FAIL_IMMEDIATELY | win32con.LOCKFILE_EXCLUSIVE_LOCK,
+                    #                      0, 0xffff0000, pywintypes.OVERLAPPED())
+                    break
                 else:
                     fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
                     break
@@ -32,8 +33,9 @@ class FileUtils(object):
         while True:
             try:
                 if platform.system() == PLATFORM_WINDOWS:
-                    hfile = win32file._get_osfhandle(f.fileno())
-                    win32file.UnlockFileEx(hfile, 0, 0, 0xffff0000, pywintypes.OVERLAPPED())
+                    # hfile = win32file._get_osfhandle(f.fileno())
+                    # win32file.UnlockFileEx(hfile, 0, 0, 0xffff0000, pywintypes.OVERLAPPED())
+                    break
                 else:
                     fcntl.flock(f, fcntl.LOCK_UN)
                 break
