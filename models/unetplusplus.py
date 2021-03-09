@@ -50,7 +50,7 @@ class ResBlock(nn.Module):
 
         out = self.conv1(x)
         out = torch.relu(out)
-        out = self.bn1(out)
+        out = self.gn1(out)
 
         out = self.conv2(out)
 
@@ -59,7 +59,7 @@ class ResBlock(nn.Module):
 
         out += residual
         out = torch.relu(out)
-        out = self.bn2(out)
+        out = self.gn2(out)
 
         return out
 

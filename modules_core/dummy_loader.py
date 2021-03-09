@@ -1,10 +1,9 @@
 from __future__ import print_function, division
 import os
-
-os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 import torch
 import numpy as np
 import json
+import random
 from modules import torch_utils
 from torch.utils.data import Dataset
 
@@ -12,135 +11,77 @@ from torch.utils.data import Dataset
 class SyntheticNoiseDataset(Dataset):
     """Dataset with original and augmented images."""
 
-    def __init__(self, train, transform=True,
-                 greyscale_directory_train=r'C:\Users\37120\Documents\BachelorThesis\image_data\flick30k_greyscale_train',
-                 augmented_directory_train=r'C:\Users\37120\Documents\BachelorThesis\image_data\flick30k_10_augmented_train',
-                 greyscale_directory_test=r'C:\Users\37120\Documents\BachelorThesis\image_data\flick30k_greyscale_test',
-                 augmented_directory_test=r'C:\Users\37120\Documents\BachelorThesis\image_data\flick30k_10_augmented_test'):
+    def __init__(self, train, transform=True, is_transforms=True,
+                 dataset_dir=r'C:\Users\37120\Documents\BachelorThesis\image_data\dataset_test_1'):
 
+        super().__init__()
         self.transform = transform
         self.train = train
+        self.is_transforms = is_transforms
+        self.dataset_samples = []
 
         if train:
+            self.train_dir= dataset_dir + r'//train'
+            for it, img_dir in enumerate(os.scandir(self.train_dir)):
+                with open(img_dir.path + r'\\train.json') as json_file:
+                    train_json = json.load(json_file)
+                filename = train_json["filename"]
+                shape = train_json["shape"]
+                self.grey_idx = train_json["features"]["grey"]
+                self.augmented_idx = train_json["features"]["augmented"]
 
-            self.greyscale_directory_train = greyscale_directory_train
-            self.augmented_directory_train = augmented_directory_train
-
-            with open(greyscale_directory_train + r'\\train.json') as json_file:
-                self.greyscale_train_json = json.load(json_file)
-            with open(greyscale_directory_train + r'\\train.json') as json_file:
-                self.augmented_train_json = json.load(json_file)
-
-            self.colorspace_greyscale = self.greyscale_train_json["Colorspace"]
-            self.colorspace_augmented = self.augmented_train_json["Colorspace"]
-            self.height_greyscale = self.greyscale_train_json["image_height"]
-            self.height_augmented = self.augmented_train_json["image_height"]
-            self.width_greyscale = self.greyscale_train_json["image_width"]
-            self.width_augmented = self.augmented_train_json["image_width"]
-            if self.colorspace_augmented != self.colorspace_greyscale:
-                raise IOError("Greyscale and augmented colospace mismatch.")
-            if self.height_augmented != self.height_greyscale:
-                raise IOError("Greyscale and augmented height mismatch.")
-            if self.width_augmented != self.width_greyscale:
-                raise IOError("Greyscale and augmented width mismatch.")
+                memmap = np.memmap(img_dir.path + f'//{filename}', dtype='float16',
+                                             mode='r',
+                                             shape=(shape[0], shape[1], shape[2]))
+                self.dataset_samples.append(memmap)
 
         else:
+            self.test_dir = dataset_dir + r'//test'
+            for it, img_dir in enumerate(os.scandir(self.test_dir)):
+                with open(img_dir.path + r'\\test.json') as json_file:
+                    test_json = json.load(json_file)
+                filename = test_json["filename"]
+                shape = test_json["shape"]
+                self.grey_idx = test_json["features"]["grey"]
+                self.augmented_idx = test_json["features"]["augmented"]
 
-            self.greyscale_directory_test = greyscale_directory_test
-            self.augmented_directory_test = augmented_directory_test
-
-            with open(greyscale_directory_test + r'\\test.json') as json_file:
-                self.greyscale_test_json = json.load(json_file)
-            with open(greyscale_directory_test + r'\\test.json') as json_file:
-                self.augmented_test_json = json.load(json_file)
-
-            self.colorspace_greyscale = self.greyscale_test_json["Colorspace"]
-            self.colorspace_augmented = self.augmented_test_json["Colorspace"]
-            self.height_greyscale = self.greyscale_test_json["image_height"]
-            self.height_augmented = self.augmented_test_json["image_height"]
-            self.width_greyscale = self.greyscale_test_json["image_width"]
-            self.width_augmented = self.augmented_test_json["image_width"]
-            if self.colorspace_augmented != self.colorspace_greyscale:
-                raise IOError("Greyscale and augmented colospace mismatch.")
-            if self.height_augmented != self.height_greyscale:
-                raise IOError("Greyscale and augmented height mismatch.")
-            if self.width_augmented != self.width_greyscale:
-                raise IOError("Greyscale and augmented width mismatch.")
-
-        self.colorspace = self.colorspace_greyscale
-        self.height = self.height_greyscale
-        self.width = self.width_greyscale
-        self.dataset_samples = []
-        self.loadAllImages()
+                memmap = np.memmap(img_dir.path + f'//{filename}', dtype='float16',
+                                   mode='r',
+                                   shape=(shape[0], shape[1], shape[2]))
+                self.dataset_samples.append(memmap)
+        print(f"{len(self.dataset_samples)} samples succesfully loaded")
 
     def __len__(self):
-        if self.train:
-            return len(self.augmented_train_json['image'])
-        else:
-            return len(self.augmented_test_json['image'])
+        return len(self.dataset_samples)
 
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
-        augmented_image = np.array(self.dataset_samples[idx]['augmented_image'][:], dtype='float32')
-        greyscale_image = np.array(self.dataset_samples[idx]['greyscale_image'][:], dtype='float32')
+        image = np.array(self.dataset_samples[idx][:], dtype='float32')
+        greyscale_image = image[:,:,self.grey_idx-1]
+        augmented_image = image[:, :, self.augmented_idx-1]
 
-        normalized_greyscale = (greyscale_image - 0) / (
-           100)
-
-        normalized_augmented = (augmented_image - 0) / (
-           100)
-
-        sample = {'greyscale_image': normalized_greyscale, 'augmented_image': normalized_augmented}
-
-        if self.transform:
-            sample = torch_utils.toTensor(sample)
-
-        return sample
-
-    def loadAllImages(self):
-
-        if self.train:
-            total_idxes = len(self.greyscale_train_json['image'])
-
-            for idx in range(total_idxes):
-                img_name = self.greyscale_train_json['image'][idx]['filename']
-                pre, ext = os.path.splitext(img_name)
-                greyscale_memmap = np.memmap(self.greyscale_directory_train + r'\\' + pre + r'.dat', dtype='float16',
-                                             mode='r',
-                                             shape=(self.height, self.width, 3))
-                augmented_memmap = np.memmap(self.augmented_directory_train + r'\\' + pre + r'.dat', dtype='float16',
-                                             mode='r',
-                                             shape=(self.height, self.width, 3))
-
-                sample = {'greyscale_image': greyscale_memmap, 'augmented_image': augmented_memmap}
+        greyscale_image = (greyscale_image - 0)/100
+        augmented_image = (augmented_image - 0) / 100
+        return {'greyscale_image': torch.from_numpy(greyscale_image),
+                'augmented_image': torch.from_numpy(augmented_image)}
 
 
-                self.dataset_samples.append(sample)
+def get_data_loaders(args):
 
-                if idx % 100 == 0:
-                    print(f"{idx} out of {total_idxes} train dataset samples are loaded")
+    dataset_train = SyntheticNoiseDataset(train=True, is_transforms=True)
+    dataset_test = SyntheticNoiseDataset(train=False, is_transforms=True)
 
-            print(f"All {total_idxes} train dataset samples are loaded successfully!")
-        else:
-            total_idxes = len(self.greyscale_test_json['image'])
+    data_loader_train = torch.utils.data.DataLoader(dataset_train,
+                                                    batch_size=args.batch_size,
+                                                    num_workers=args.data_workers,
+                                                    pin_memory=True,
+                                                    shuffle=True)
+    data_loader_test = torch.utils.data.DataLoader(dataset_test,
+                                                   batch_size=args.batch_size,
+                                                   num_workers=args.data_workers,
+                                                   pin_memory=True,
+                                                   shuffle=False)
 
-            for idx in range(total_idxes):
-                img_name = self.greyscale_test_json['image'][idx]['filename']
-                pre, ext = os.path.splitext(img_name)
-                greyscale_memmap = np.memmap(self.greyscale_directory_test + r'\\' + pre + r'.dat', dtype='float16',
-                                             mode='r',
-                                             shape=(self.height, self.width, 3))
-                augmented_memmap = np.memmap(self.augmented_directory_test + r'\\' + pre + r'.dat', dtype='float16',
-                                             mode='r',
-                                             shape=(self.height, self.width, 3))
-
-                sample = {'greyscale_image': greyscale_memmap, 'augmented_image': augmented_memmap}
-
-                self.dataset_samples.append(sample)
-
-                if idx % 100 == 0:
-                    print(f"{idx} out of {total_idxes} train dataset samples are loaded")
-
-            print(f"All {total_idxes} test dataset samples are loaded successfully!")
+    return data_loader_train, data_loader_test

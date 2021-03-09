@@ -11,6 +11,7 @@ import torchvision
 import time
 import sys
 from modules import tensorboard_utils
+from modules import radam
 
 import torchnet as tnt  # pip install git+https://github.com/pytorch/tnt.git@master
 
@@ -106,7 +107,7 @@ for sample in tqdm(dataset_test):
 
 model = unetplusplus.Model(args)
 loss_func = torch.nn.MSELoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
+optimizer = radam(model.parameters(), lr=args.learning_rate)
 
 for sample in tqdm(dataset_train):
     x = sample['augmented_image']
@@ -126,7 +127,8 @@ image_metrics = {
     'Greyscale_image': [],
     'Augmented_image': []
 }
-
+import sys
+sys.exit()
 
 for stage in ['train', 'test']:
     for metric in [
