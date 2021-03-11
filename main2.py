@@ -93,6 +93,7 @@ def main():
                 stage = 'test'
 
             for sample in tqdm(data_loader):
+
                 y = sample['greyscale_image']
                 x = sample['augmented_image']
 

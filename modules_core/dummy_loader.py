@@ -42,6 +42,7 @@ class SyntheticNoiseDataset(Dataset):
 
         greyscale_image = (greyscale_image - 0)/100
         augmented_image = (augmented_image - 0) / 100
+
         return {'greyscale_image': torch.from_numpy(greyscale_image),
                 'augmented_image': torch.from_numpy(augmented_image)}
 
