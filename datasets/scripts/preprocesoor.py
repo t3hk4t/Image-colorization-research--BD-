@@ -7,8 +7,8 @@ import json
 import sys
 import random
 
-location_test = r'C:\Users\37120\Documents\BachelorThesis\image_data\dataset_test_1\test'
-location_train = r'C:\Users\37120\Documents\BachelorThesis\image_data\dataset_test_1\train'
+location_test = r'C:\Users\37120\Documents\BachelorThesis\image_data\dataset_test_2\test'
+location_train = r'C:\Users\37120\Documents\BachelorThesis\image_data\dataset_test_2\train'
 original_img_dir = r'C:\Users\37120\Documents\BachelorThesis\image_data\flickr30k_images\flickr30k_images'
 noise_dir = r'C:\Users\37120\Documents\BachelorThesis\noise_data'
 
@@ -69,7 +69,7 @@ def generate_memmap(greyscale_image: np.ndarray, augmented_image: np.ndarray, pa
             os.makedirs(memmap_folder)
         filename = filename + '.dat'
 
-        memmap_location = memmap_folder + r'//' + filename
+        memmap_location = memmap_folder + r'//' + r'data.bin'
 
         json_data = {
             'Colorspace': 'CieLab',
@@ -82,7 +82,7 @@ def generate_memmap(greyscale_image: np.ndarray, augmented_image: np.ndarray, pa
         fp = np.memmap(memmap_location, dtype='float16', mode='w+', shape=out_data.shape)
         fp[:] = out_data[:]
         del fp
-        save_json(memmap_folder + r'//'+"train.json",json_data)
+        save_json(memmap_folder + r'//'+"data.json",json_data)
     else:
         out_data = np.concatenate((greyscale_image, augmented_image), axis=2)
         # print(out_data.shape)
@@ -103,7 +103,7 @@ def generate_memmap(greyscale_image: np.ndarray, augmented_image: np.ndarray, pa
             os.makedirs(memmap_folder)
         filename = filename + '.dat'
 
-        memmap_location = memmap_folder + r'//' + filename
+        memmap_location = memmap_folder + r'//' + r'data.bin'
 
         json_data = {
             'Colorspace': 'CieLab',
@@ -115,7 +115,7 @@ def generate_memmap(greyscale_image: np.ndarray, augmented_image: np.ndarray, pa
         fp = np.memmap(memmap_location, dtype='float16', mode='w+', shape=out_data.shape)
         fp[:] = out_data[:]
         del fp
-        save_json(memmap_folder + r'//' + "test.json", json_data)
+        save_json(memmap_folder + r'//' + "data.json", json_data)
 
 
 def validate(it):

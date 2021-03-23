@@ -1,8 +1,10 @@
 from pytube import YouTube
 import os
 
-directory = r'C:\Users\37120\Documents\BachelorThesis\Bachelor thesis\BD izstrade\Datasets\video_urls'
-
+directory = r'C:\Users\37120\Documents\BachelorThesis\Bachelor thesis\datasets\video_urls'
+test = r'C:\Users\37120\Documents\BachelorThesis\image_data\video_dataset\test'
+train = r'C:\Users\37120\Documents\BachelorThesis\image_data\video_dataset\train'
+validate = r'C:\Users\37120\Documents\BachelorThesis\image_data\video_dataset\validate'
 
 def file_lengthy(fname):
     with open(fname) as f:
@@ -20,24 +22,27 @@ def process_file(path):
         print(f"{files_done} out of {lines} downloads finished. 0% finished")
         for video_url in file:
             url = video_url.strip()
-            download_vid(url)
+            download_vid(url, path)
             files_done += 1
             percent_finished = (files_done/lines) * 100
             print(f"{files_done} out of {lines} downloads finished. {percent_finished}% finished")
 
 
-def download_vid(path):
+def download_vid(path, root_file_name):
     try:
         yt_obj = YouTube(path)
-        yt_obj.streams.get_lowest_resolution().download(output_path=
-                                                        r'C:\Users\37120\Documents\BachelorThesis\Bachelor thesis\BD izstrade\Datasets\youtube_videos\test')
+        if os.path.basename(root_file_name) == 'video_urls_test.txt':
+            yt_obj.streams.get_lowest_resolution().download(output_path=test)
+        elif os.path.basename(root_file_name) == 'video_urls_train.txt':
+            yt_obj.streams.get_lowest_resolution().download(output_path=train)
+        else:
+            yt_obj.streams.get_lowest_resolution().download(output_path=validate)
     except Exception as e:
-        pass  # simple ignore for non existing videos
+        print(e)
 
 
 if __name__ == '__main__':
     for video in os.scandir(directory):
         if video.path.endswith(".txt") and video.is_file():
-            print(video.path)
             process_file(video.path)
-            break
+

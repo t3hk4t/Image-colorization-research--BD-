@@ -75,6 +75,7 @@ class TensorBoardUtils(object):
 
         plt.close(fig)
 
+
     def addHistogramsTwo(self, data_positives, data_negatives, tag, global_step=0):
         fig = plt.figure()
         plt.clf()

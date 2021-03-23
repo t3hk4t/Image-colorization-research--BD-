@@ -19,14 +19,14 @@ class SyntheticNoiseDataset(Dataset):
 
         for path in paths:
             for it, img_dir in enumerate(os.scandir(path)):
-                with open(img_dir.path + r'\\train.json') as json_file:
+                with open(img_dir.path + r'\\data.json') as json_file:
                     train_json = json.load(json_file)
                 filename = train_json["filename"]
                 shape = train_json["shape"]
                 self.grey_idx = train_json["features"]["grey"]
                 self.augmented_idx = train_json["features"]["augmented"]
 
-                memmap = np.memmap(img_dir.path + f'//{filename}', dtype='float16',
+                memmap = np.memmap(img_dir.path + f'//data.bin', dtype='float16',
                                              mode='r',
                                              shape=(shape[0], shape[1], shape[2]))
                 self.dataset_samples.append(memmap)
