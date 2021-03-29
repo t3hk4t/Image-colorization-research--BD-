@@ -79,7 +79,7 @@ class Model(nn.Module):
         if self.deep_supervision:
             self.output_count = self.depth - 1
 
-        self.channels = [args.conv3d_depth, self.first_layer_channels]
+        self.channels = [1, self.first_layer_channels]
         for d in range(self.depth-1):
             self.channels.append(self.channels[-1]*self.expand_rate)
         # channels = [1, 16, 32, 64, 128, 256]
@@ -125,7 +125,7 @@ class Model(nn.Module):
                 else:
                     x = copy.copy(intermediate_outputs[idx])
                     x.append(self.up(intermediate_outputs[idx+1][idx_depth-1]))
-                    x = torch.cat(x, 1)
+                    x = torch.cat(x)
                 module = depth_modules[idx]
                 out = module(x)
                 intermediate_outputs[idx].append(out)

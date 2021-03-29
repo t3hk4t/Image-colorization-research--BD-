@@ -68,8 +68,8 @@ class SyntheticNoiseDataset(Dataset):
             img = np.expand_dims(img, axis=0)
             augmented_image = np.concatenate([augmented_image, img], axis=0)
 
-        # print(greyscale_image.shape)
-        # print(augmented_image.shape)
+        print(greyscale_image.shape)
+        print(augmented_image.shape)
         # import matplotlib.pyplot as plt
         # import matplotlib
         # matplotlib.use('TkAgg')
@@ -84,7 +84,8 @@ class SyntheticNoiseDataset(Dataset):
 
         greyscale_image = (greyscale_image - 0)/100
         augmented_image = (augmented_image - 0) / 100
-
+        greyscale_image = np.swapaxes(greyscale_image, 0, 1)
+        augmented_image = np.swapaxes(augmented_image, 0, 1)
         return {'greyscale_image': torch.from_numpy(greyscale_image),
                 'augmented_image': torch.from_numpy(augmented_image)}
 
