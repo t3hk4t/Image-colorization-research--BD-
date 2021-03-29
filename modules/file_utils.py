@@ -1,7 +1,7 @@
 import os
 import time
 import platform
-
+import json
 PLATFORM_WINDOWS = 'Windows'
 
 if platform.system() == PLATFORM_WINDOWS:
@@ -27,6 +27,13 @@ class FileUtils(object):
                     break
             except:
                 time.sleep(0.1)
+
+    @staticmethod
+    def writeJSON(path, obj):
+        with open(path, 'w') as fp:
+            FileUtils.lock_file(fp)
+            json.dump(obj, fp, indent=4)
+            FileUtils.lock_file(fp)
 
     @staticmethod
     def unlock_file(f):
