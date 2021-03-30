@@ -1,0 +1,10 @@
+
+datasets/flickr30k_augmented_test0/
+
+datasets/flickr30k_images_greyscale_test/
+
+modules/__pycache__/
+
+.idea/
+
+modules_core/__pycache__/
