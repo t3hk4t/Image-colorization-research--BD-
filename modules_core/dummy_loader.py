@@ -19,7 +19,7 @@ class SyntheticNoiseDataset(Dataset):
         self.conv3d_depth = conv3d_depth
         for path in paths:
             for it, img_dir in enumerate(os.scandir(path)):
-                if is_debug and it > 9:
+                if is_debug and it > 99:
                     break
                 with open(img_dir.path + f'{os.sep}data.json') as json_file:
                     train_json = json.load(json_file)
@@ -68,8 +68,8 @@ class SyntheticNoiseDataset(Dataset):
             img = np.expand_dims(img, axis=0)
             augmented_image = np.concatenate([augmented_image, img], axis=0)
 
-        print(greyscale_image.shape)
-        print(augmented_image.shape)
+        # print(greyscale_image.shape)
+        # print(augmented_image.shape)
         # import matplotlib.pyplot as plt
         # import matplotlib
         # matplotlib.use('TkAgg')

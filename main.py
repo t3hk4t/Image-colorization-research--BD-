@@ -32,7 +32,7 @@ def main():
     parser.add_argument('-sequence_name', default=f'new_run', type=str)
     parser.add_argument('-is_cuda', default=True, type=lambda x: (str(x).lower() == 'true'))
     parser.add_argument('-learning_rate', default=1e-4, type=float)
-    parser.add_argument('-batch_size', default=3, type=int)
+    parser.add_argument('-batch_size', default=5, type=int)
     parser.add_argument('-path_train', default=[r'C:\Users\37120\Documents\BachelorThesis\image_data\dataset_test_2\train'], nargs='*')
     parser.add_argument('-path_test', default=[r'C:\Users\37120\Documents\BachelorThesis\image_data\dataset_test_2\test'], nargs='*')
     parser.add_argument('-data_workers', default=1, type=int)
@@ -40,7 +40,7 @@ def main():
     parser.add_argument('-is_deep_supervision', default=True, type=lambda x: (str(x).lower() == 'true'))
     parser.add_argument('-is_debug', default=True, type=lambda x: (str(x).lower() == 'true'))
     parser.add_argument('-unet_depth', default=5, type=int)
-    parser.add_argument('-first_conv_channel_count', default=8, type=int)
+    parser.add_argument('-first_conv_channel_count', default=4, type=int)
     parser.add_argument('-expansion_rate', default=2, type=int)
     parser.add_argument('-continue_training', default=False, type=lambda x: (str(x).lower() == 'true'))
     parser.add_argument('-saved_model_path', default=r'C:\Users\37120\Documents\BachelorThesis\Bachelor thesis\save4', type=str)
@@ -49,9 +49,9 @@ def main():
     # TODO add more params and make more beautitfull cuz this file is a mess
     args, _ = parser.parse_known_args()
 
-    path_sequence = f'./results/{args.sequence_name}'
+    path_sequence = f'../results/{args.sequence_name}'
     args.run_name += ('-' + datetime.utcnow().strftime(f'%y-%m-%d--%H-%M-%S'))
-    path_run = f'./results/{args.sequence_name}/{args.run_name}'
+    path_run = f'../results/{args.sequence_name}/{args.run_name}'
     FileUtils.createDir(path_run)
     FileUtils.writeJSON(f'{path_run}/args.json', vars(args))
     USE_CUDA = torch.cuda.is_available()
@@ -164,9 +164,9 @@ def main():
                 meters[f'{stage}_loss'].add(loss.item())
 
                 if tensorboard_image_idx < 100 and data_loader == data_loader_test:
-                    for idx in range(x.shape[0]):
+                    for idx in range(x.shape[2]):
                         if tensorboard_image_idx < 100:
-                            data = torch.cat([y[idx,:,:], x[idx,:,:], y_prim[idx,:,:]], 1)
+                            data = torch.cat([y[0,0,idx,:,:], x[0,0,idx,:,:], y_prim[0,idx,:,:]], 1)
                             tensorboard_writer.add_image(f'sample_{tensorboard_image_idx}', data, dataformats='HW', global_step=epoch)
                             tensorboard_image_idx += 1
                         else:

@@ -7,8 +7,8 @@ import json
 import sys
 import random
 from blend_modes import multiply
-
-
+from blend_modes import darken_only
+it = 0
 location_test = r'C:\Users\37120\Documents\BachelorThesis\image_data\dataset_test_2\test'
 location_train = r'C:\Users\37120\Documents\BachelorThesis\image_data\dataset_test_2\train'
 original_img_dir = r'C:\Users\37120\Documents\BachelorThesis\image_data\flickr30k_images\flickr30k_images'
@@ -51,6 +51,7 @@ def sp_noise(image,prob):
     return output
 
 def generate_memmap(greyscale_image: np.ndarray, augmented_image: np.ndarray, path, train = True):
+    global it
     if train:
         out_data = np.concatenate((greyscale_image, augmented_image), axis=2)
         print(out_data.shape)
@@ -59,10 +60,10 @@ def generate_memmap(greyscale_image: np.ndarray, augmented_image: np.ndarray, pa
         ref_img2 = out_data[:,:, 1]
         print(ref_img2.shape)
         import matplotlib.pyplot as plt
-        plt.imshow(ref_img, 'gray')
-        plt.show()
-        plt.imshow(ref_img2, 'gray')
-        plt.show()
+        plt.imshow(np.concatenate([ref_img, ref_img2], axis=1), 'gray')
+        #plt.show()
+        plt.savefig(f'test\\{it}books_read.png')
+        it = it + 1
 
         # filename = Path(path).stem
         # memmap_folder = location_train+f'//{filename}'
@@ -86,36 +87,34 @@ def generate_memmap(greyscale_image: np.ndarray, augmented_image: np.ndarray, pa
         # save_json(memmap_folder + r'//'+"data.json",json_data)
     else:
         out_data = np.concatenate((greyscale_image, augmented_image), axis=2)
-        print(out_data.shape)
-        ref_img = out_data[:,:,0]
-        print(ref_img.shape)
-        ref_img2 = out_data[:,:, 1]
-        print(ref_img2.shape)
-        import matplotlib.pyplot as plt
-        plt.imshow(ref_img, 'gray')
-        plt.show()
-        plt.imshow(ref_img2, 'gray')
-        plt.show()
+        # print(out_data.shape)
+        # ref_img = out_data[:,:,0]
+        # print(ref_img.shape)
+        # ref_img2 = out_data[:,:, 1]
+        # print(ref_img2.shape)
+        # import matplotlib.pyplot as plt
+        # plt.imshow(np.concatenate([ref_img, ref_img2]), 1)
+        # plt.show()
 
-        # filename = Path(path).stem
-        # memmap_folder = location_test + f'//{filename}'
-        # if not os.path.exists(memmap_folder):
-        #     os.makedirs(memmap_folder)
-        # filename = filename + '.dat'
-        #
-        # memmap_location = memmap_folder + r'//' + r'data.bin'
-        #
-        # json_data = {
-        #     'Colorspace': 'CieLab',
-        #     'filename': filename,
-        #     'shape': [320, 480, 2],
-        #     'original_images': original_img_dir,
-        #     'features': {'grey': 1, 'augmented': 2}}
-        #
-        # fp = np.memmap(memmap_location, dtype='float16', mode='w+', shape=out_data.shape)
-        # fp[:] = out_data[:]
-        # del fp
-        # save_json(memmap_folder + r'//' + "data.json", json_data)
+        filename = Path(path).stem
+        memmap_folder = location_test + f'//{filename}'
+        if not os.path.exists(memmap_folder):
+            os.makedirs(memmap_folder)
+        filename = filename + '.dat'
+
+        memmap_location = memmap_folder + r'//' + r'data.bin'
+
+        json_data = {
+            'Colorspace': 'CieLab',
+            'filename': filename,
+            'shape': [320, 480, 2],
+            'original_images': original_img_dir,
+            'features': {'grey': 1, 'augmented': 2}}
+
+        fp = np.memmap(memmap_location, dtype='float16', mode='w+', shape=out_data.shape)
+        fp[:] = out_data[:]
+        del fp
+        save_json(memmap_folder + r'//' + "data.json", json_data)
 
 
 def validate(it):
@@ -135,16 +134,13 @@ def process_file(path, train):
 
     original_image = (Image.open(path)).convert("RGBA")
     original_image = original_image.resize((480, 320), Image.ANTIALIAS)
-    original_image.putalpha(128)
-    alpha_noise_add = random.randint(3, 8)
+    alpha_noise_add = random.randint(1, 4)
     for i in range(alpha_noise_add):
         dir_new = r'C:\Users\37120\Documents\BachelorThesis\noise_data\\'
         noise = getRandomFile(noise_dir)
         dir_new = dir_new + noise + '\\'
-        deterioration_overlay_img = Image.open(dir_new + getRandomFile(dir_new))
+        deterioration_overlay_img = Image.open(dir_new + getRandomFile(dir_new)).convert("RGBA")
         deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
-        deterioration_overlay_img = deterioration_overlay_img.convert("RGBA") #Now I want to add some augmentations like rotate etc
-
 
         if random.randint(0, 100) <= 50:
             deterioration_overlay_img = deterioration_overlay_img.transpose(Image.FLIP_LEFT_RIGHT) #Flip horizontal
@@ -153,46 +149,48 @@ def process_file(path, train):
         deg = random.uniform(-5.0, 5.0)
         deterioration_overlay_img = deterioration_overlay_img.rotate(deg)
 
-        datas = deterioration_overlay_img.getdata()
-        newData = []
-        for item in datas:
-            if item[0] > 190 and item[1] > 190 and item[2] > 190:
-                newData.append((255, 255, 255, 0))
-            else:
-                old_value = int((item[0] + item[1] + item[2]) / 3)
-                newData.append((item[0], item[1], item[2], 255))
-
-        deterioration_overlay_img.putdata(newData)
-
-        if random.randint(0, 100) <= 50: #Invert colors
-            r, g, b, a = deterioration_overlay_img.split()
-            r, g, b = map(invert, (r, g, b))
-            deterioration_overlay_img = Image.merge(deterioration_overlay_img.mode, (r, g, b, a))
+        scale = random.uniform(1.2, 1.5) * 2
+        w, h = deterioration_overlay_img.size
+        deterioration_overlay_img = deterioration_overlay_img.crop((w/2 - w / scale, h/2 - h / scale,
+                        w/2 + w / scale, h/2 + h / scale))
+        deterioration_overlay_img = deterioration_overlay_img.resize((w, h), Image.LANCZOS)
 
 
-        image_new = Image.new("RGBA", original_image.size)
-        image_new = Image.alpha_composite(image_new, original_image)
-        image_new = Image.alpha_composite(image_new, deterioration_overlay_img)
-        image = image_new.copy()
+        background_img = np.array(original_image)  # Inputs to blend_modes need to be numpy arrays.
+        background_img_float = background_img.astype(float)  # Inputs to blend_modes need to be floats.
+
+        foreground_img = np.array(deterioration_overlay_img)  # Inputs to blend_modes need to be numpy arrays.
+        foreground_img_float = foreground_img.astype(float)  # Inputs to blend_modes need to be floats.
+
+        image_add_type = random.randint(1, 2)
+        if image_add_type == 1:
+            new_img = darken_only(background_img_float, foreground_img_float, 1)
+        elif image_add_type == 2:
+            new_img = multiply(background_img_float, foreground_img_float, 1)
+
+        # Convert blended image back into PIL image
+        blended_img = np.uint8(new_img)  # Image needs to be converted back to uint8 type for PIL handling.
+        original_image = Image.fromarray(blended_img)
+
 
     if random.randint(0, 100) <= 10:  # Gaussian noise
         alpha = random.uniform(0, 0.02)
-        ata = np.asarray(image)
+        ata = np.asarray(original_image)
         salt_pepper = sp_noise(ata, alpha)
         im2 = Image.fromarray(salt_pepper)
-        image.paste(im2, (0, 0), im2)
+        original_image.paste(im2, (0, 0), im2)
     if random.randint(0, 100) <= 30:  # Blur
-        image = image.filter(ImageFilter.BoxBlur(1))
+        original_image = original_image.filter(ImageFilter.BoxBlur(1))
 
 
-    rgb_image = image.convert('RGB')
+
+    rgb_image = original_image.convert('RGB')
     image_lab = color.rgb2lab(rgb_image)
     image_lab[..., 1] = image_lab[..., 2] = 0
     augmented_image = np.asarray(image_lab)
     augmented_image = np.delete(augmented_image, 1, 2)
     augmented_image = np.delete(augmented_image, 1, 2)
      # FINAL GREYSCALE IMAGE THAT IS (320, 480)
-
     generate_memmap(greyscale_image,augmented_image, path, train = train)
 
 

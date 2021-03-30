@@ -85,8 +85,8 @@ class Model(nn.Module):
         # channels = [1, 16, 32, 64, 128, 256]
 
         # up and down layers
-        self.pool = nn.MaxPool3d(2, 2, 1)
-        self.up = nn.Upsample(scale_factor=2, mode='trilinear', align_corners=True)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.up = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
 
         self.module_depth_list = torch.nn.ModuleList()
         for idx_depth in range(self.depth):
@@ -120,12 +120,26 @@ class Model(nn.Module):
                     x = input
                 # input for first depth (model backbone)
                 elif idx_depth == 0 and idx > 0:
-                    x = self.pool(intermediate_outputs[idx-1][0])
+                    x = intermediate_outputs[idx-1][0] # BxCxDxHxW
+                    B, C, D, H, W = x.shape
+                    x = x.permute(0,2,1,3,4)
+                    x = x.reshape(B*D, *x.shape[-3:])
+                    x = self.pool(x)
+                    x = x.view(B, D, *x.shape[-3:])
+                    x = x.permute(0,2,1,3,4)
                 # input for rest of the modules
                 else:
                     x = copy.copy(intermediate_outputs[idx])
-                    x.append(self.up(intermediate_outputs[idx+1][idx_depth-1]))
-                    x = torch.cat(x)
+
+                    x1 = intermediate_outputs[idx+1][idx_depth-1]
+                    B, C, D, H, W = x1.shape
+                    x1 = x1.permute(0, 2, 1, 3, 4)
+                    x1 = x1.reshape(B * D, *x1.shape[-3:])
+                    x1 = self.up(x1)
+                    x1 = x1.view(B, D, *x1.shape[-3:])
+                    x1 = x1.permute(0, 2, 1, 3, 4)
+                    x.append(x1)
+                    x = torch.cat(x, 1)
                 module = depth_modules[idx]
                 out = module(x)
                 intermediate_outputs[idx].append(out)

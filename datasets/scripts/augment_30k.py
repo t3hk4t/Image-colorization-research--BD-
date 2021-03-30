@@ -157,15 +157,15 @@ def process_file(path, it, train = True):
     rgb_image = image.convert('RGB')
     image_lab = color.rgb2lab(rgb_image)
     image_lab[..., 1] = image_lab[..., 2] = 0
-    # image_rgb = color.lab2rgb(image_lab)
-    # import matplotlib.pyplot as plt
-    # plt.imshow(image_rgbS
-    # plt.show()
-    data = np.asarray(image_lab)
-    if train:
-        generate_memmap(data.shape, path, data, it, True)
-    else:
-        generate_memmap(data.shape, path, data, it, False)
+    image_rgb = color.lab2rgb(image_lab)
+    import matplotlib.pyplot as plt
+    plt.imshow(image_rgb)
+    plt.show()
+    # data = np.asarray(image_lab)
+    # if train:
+    #     generate_memmap(data.shape, path, data, it, True)
+    # else:
+    #     generate_memmap(data.shape, path, data, it, False)
 
 
 
