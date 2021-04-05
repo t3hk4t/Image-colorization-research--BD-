@@ -46,10 +46,11 @@ class ResBlock(nn.Module):
 
     def forward(self, x):
         # Batch, Channel, W
+        lol = nn.LeakyReLU(0.1)  # changed to leaky relu
         residual = x
 
         out = self.conv1(x)
-        out = torch.relu(out)
+        out = lol(out)
         out = self.gn1(out)
 
         out = self.conv2(out)
@@ -58,10 +59,27 @@ class ResBlock(nn.Module):
             residual = self.conv_res(x)
 
         out += residual
-        out = torch.relu(out)
+        out = lol(out)  # Changed to leaky relu
         out = self.gn2(out)
 
         return out
+        # # Batch, Channel, W
+        # residual = x
+        #
+        # out = self.conv1(x)
+        # out = torch.relu(out)
+        # out = self.gn1(out)
+        #
+        # out = self.conv2(out)
+        #
+        # if self.is_projection:
+        #     residual = self.conv_res(x)
+        #
+        # out += residual
+        # out = torch.relu(out)
+        # out = self.gn2(out)
+        #
+        # return out
 
 
 # unet++ with resblocks

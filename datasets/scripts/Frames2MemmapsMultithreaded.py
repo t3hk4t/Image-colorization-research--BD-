@@ -5,16 +5,19 @@ from skimage import color
 from PIL import Image, ImageEnhance, ImageFilter
 import json
 import sys
+import time
+from multiprocessing import Process
+import multiprocessing
 import random
 from blend_modes import multiply
 from blend_modes import darken_only
 import concurrent.futures
 it = 0
-location_test = r'C:\Users\37120\Documents\BachelorThesis\image_data\video_framed_memmap\test'
-location_train = r'C:\Users\37120\Documents\BachelorThesis\image_data\video_framed_memmap\train'
-original_img_dir_test = r'C:\Users\37120\Documents\BachelorThesis\image_data\video_framed_dataset\test'
-original_img_dir_train = r'C:\Users\37120\Documents\BachelorThesis\image_data\video_framed_dataset\train'
-noise_dir = r'C:\Users\37120\Documents\BachelorThesis\noise_data'
+location_test = r'/mnt/beegfs2/home/leo01/image_data/video_framed_memmap_dataset/test/'
+location_train = r'/mnt/beegfs2/home/leo01/image_data/video_framed_memmap_dataset/train/'
+original_img_dir_test = r'/mnt/beegfs2/home/leo01/image_data/video_framed_dataset/test/'
+original_img_dir_train = r'/mnt/beegfs2/home/leo01/image_data/video_framed_dataset/train/'
+noise_dir = r'/mnt/beegfs2/home/leo01/noise_data/'
 
 
 def invert(image):
@@ -57,18 +60,16 @@ def generate_memmap(greyscale_image: np.ndarray, augmented_image: np.ndarray, pa
     if train:
         out_data = np.concatenate((greyscale_image, augmented_image), axis=2)
 
-        image_folder = path+f'//{folder}' #if not exists image folder, then create
+        image_folder = path+f'{os.sep}{folder}' #if not exists image folder, then create
         if not os.path.exists(image_folder):
             os.makedirs(image_folder)
 
-        memmap_folder = image_folder + f'//{image_name}' #if not exists image folder, then create
+        memmap_folder = image_folder + f'{os.sep}{image_name}' #if not exists image folder, then create
         if not os.path.exists(memmap_folder):
             os.makedirs(memmap_folder)
 
         filename = image_name + ".jpg"
-
-        memmap_location = memmap_folder + r'//' + r'data.bin'
-
+        memmap_location = memmap_folder + f'{os.sep}' + r'data.bin'
         json_data = {
             'Colorspace': 'CieLab',
             'filename': filename,
@@ -79,21 +80,21 @@ def generate_memmap(greyscale_image: np.ndarray, augmented_image: np.ndarray, pa
         fp = np.memmap(memmap_location, dtype='float16', mode='w+', shape=out_data.shape)
         fp[:] = out_data[:]
         del fp
-        save_json(memmap_folder + r'//'+"data.json",json_data)
+        save_json(memmap_folder + f'{os.sep}'+"data.json",json_data)
     else:
         out_data = np.concatenate((greyscale_image, augmented_image), axis=2)
 
-        image_folder = path + f'//{folder}'  # if not exists image folder, then create
+        image_folder = path + f'{os.sep}{folder}'  # if not exists image folder, then create
         if not os.path.exists(image_folder):
             os.makedirs(image_folder)
 
-        memmap_folder = image_folder + f'//{image_name}'  # if not exists image folder, then create
+        memmap_folder = image_folder + f'{os.sep}{image_name}'  # if not exists image folder, then create
         if not os.path.exists(memmap_folder):
             os.makedirs(memmap_folder)
 
         filename = image_name + ".jpg"
 
-        memmap_location = memmap_folder + r'//' + r'data.bin'
+        memmap_location = memmap_folder + f'{os.sep}' + r'data.bin'
 
         json_data = {
             'Colorspace': 'CieLab',
@@ -105,7 +106,7 @@ def generate_memmap(greyscale_image: np.ndarray, augmented_image: np.ndarray, pa
         fp = np.memmap(memmap_location, dtype='float16', mode='w+', shape=out_data.shape)
         fp[:] = out_data[:]
         del fp
-        save_json(memmap_folder + r'//' + "data.json", json_data)
+        save_json(memmap_folder + f'{os.sep}' + "data.json", json_data)
 
 
 def validate(it):
@@ -156,11 +157,11 @@ def blend_imgs(deterioration_overlay_img, original_image, opacity):
 
 
 def heavy_damage(original_image):
-    dir_new = r'C:\Users\37120\Documents\BachelorThesis\noise_data\\'
+    dir_new = r'/mnt/beegfs2/home/leo01/noise_data/'
     oval_noise = random.randint(0, 2)
     if random.uniform(0.0, 1.0) < 0.2:  # 001 noise data dir
         for i in range(oval_noise):
-            deterioration_overlay_img = Image.open(dir_new + "001\\" + getRandomFile(dir_new + "001\\")).convert("RGBA")
+            deterioration_overlay_img = Image.open(dir_new + f"001{os.sep}" + getRandomFile(dir_new + f"001{os.sep}")).convert("RGBA")
             deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
             deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
             deterioration_overlay_img = scale_img(deterioration_overlay_img)
@@ -169,7 +170,7 @@ def heavy_damage(original_image):
     scratchy_noise = random.randint(1, 5)
     if random.uniform(0.0, 1.0) < 0.8:  # 002 noise data dir
         for i in range(scratchy_noise):
-            deterioration_overlay_img = Image.open(dir_new + "002\\" + getRandomFile(dir_new + "002\\")).convert("RGBA")
+            deterioration_overlay_img = Image.open(dir_new + f"002{os.sep}" + getRandomFile(dir_new + f"002{os.sep}")).convert("RGBA")
             deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
             deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
             deterioration_overlay_img = scale_img(deterioration_overlay_img)
@@ -178,7 +179,7 @@ def heavy_damage(original_image):
     minor_noise_1 = random.randint(1, 2)
     if random.uniform(0.0, 1.0) < 0.3:  # 003 noise data dir
         for i in range(minor_noise_1):
-            deterioration_overlay_img = Image.open(dir_new + "003\\" + getRandomFile(dir_new + "003\\")).convert("RGBA")
+            deterioration_overlay_img = Image.open(dir_new + f"003{os.sep}" + getRandomFile(dir_new + f"003{os.sep}")).convert("RGBA")
             deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
             deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
             deterioration_overlay_img = scale_img(deterioration_overlay_img)
@@ -187,7 +188,7 @@ def heavy_damage(original_image):
     minor_noise_2 = random.randint(1, 3)
     if random.uniform(0.0, 1.0) < 0.3:  # 004 noise data dir
         for i in range(minor_noise_2):
-            deterioration_overlay_img = Image.open(dir_new + "004\\" + getRandomFile(dir_new + "004\\")).convert("RGBA")
+            deterioration_overlay_img = Image.open(dir_new + f"004{os.sep}" + getRandomFile(dir_new + f"004{os.sep}")).convert("RGBA")
             deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
             deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
             deterioration_overlay_img = scale_img(deterioration_overlay_img)
@@ -196,7 +197,7 @@ def heavy_damage(original_image):
     minor_noise_3 = random.randint(1, 2)
     if random.uniform(0.0, 1.0) < 0.2:  # 005 noise data dir
         for i in range(minor_noise_3):
-            deterioration_overlay_img = Image.open(dir_new + "005\\" + getRandomFile(dir_new + "005\\")).convert("RGBA")
+            deterioration_overlay_img = Image.open(dir_new + f"005{os.sep}" + getRandomFile(dir_new + f"005{os.sep}")).convert("RGBA")
             deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
             deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
             deterioration_overlay_img = scale_img(deterioration_overlay_img)
@@ -205,7 +206,7 @@ def heavy_damage(original_image):
     major_noise_1 = random.randint(1, 2)
     if random.uniform(0.0, 1.0) < 0.1:  # 005 noise data dir
         for i in range(major_noise_1):
-            deterioration_overlay_img = Image.open(dir_new + "006\\" + getRandomFile(dir_new + "006\\")).convert("RGBA")
+            deterioration_overlay_img = Image.open(dir_new + f"006{os.sep}" + getRandomFile(dir_new + f"006{os.sep}")).convert("RGBA")
             deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
             deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
             deterioration_overlay_img = scale_img(deterioration_overlay_img)
@@ -214,14 +215,14 @@ def heavy_damage(original_image):
     scratchy_noise_2 = random.randint(1, 5)
     if random.uniform(0.0, 1.0) < 0.8:  # 006 noise data dir
         for i in range(scratchy_noise_2):
-            deterioration_overlay_img = Image.open(dir_new + "007\\" + getRandomFile(dir_new + "007\\")).convert("RGBA")
+            deterioration_overlay_img = Image.open(dir_new + f"007{os.sep}" + getRandomFile(dir_new + f"007{os.sep}")).convert("RGBA")
             deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
             deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
             deterioration_overlay_img = scale_img(deterioration_overlay_img)
             original_image = blend_imgs(deterioration_overlay_img, original_image, random.uniform(0.85, 1))
 
     if random.uniform(0.0, 1.0) < 0.5:  # 007 grain effect
-        deterioration_overlay_img = Image.open(dir_new + "007\\" + getRandomFile(dir_new + "007\\")).convert("RGBA")
+        deterioration_overlay_img = Image.open(dir_new + f"007{os.sep}" + getRandomFile(dir_new + f"007{os.sep}")).convert("RGBA")
         deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
         deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
         deterioration_overlay_img = scale_img(deterioration_overlay_img)
@@ -230,7 +231,7 @@ def heavy_damage(original_image):
     scratchy_noise_3 = random.randint(1, 5)
     if random.uniform(0.0, 1.0) < 0.8:  # 008 noise data dir
         for i in range(scratchy_noise_3):
-            deterioration_overlay_img = Image.open(dir_new + "009\\" + getRandomFile(dir_new + "009\\")).convert("RGBA")
+            deterioration_overlay_img = Image.open(dir_new + f"009{os.sep}" + getRandomFile(dir_new + f"009{os.sep}")).convert("RGBA")
             deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
             deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
             deterioration_overlay_img = scale_img(deterioration_overlay_img)
@@ -239,7 +240,7 @@ def heavy_damage(original_image):
     major_noise_2 = random.randint(1, 2)
     if random.uniform(0.0, 1.0) < 0.05:  # 009 noise data dir
         for i in range(major_noise_2):
-            deterioration_overlay_img = Image.open(dir_new + "010\\" + getRandomFile(dir_new + "010\\")).convert("RGBA")
+            deterioration_overlay_img = Image.open(dir_new + f"010{os.sep}" + getRandomFile(dir_new + f"010{os.sep}")).convert("RGBA")
             deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
             deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
             deterioration_overlay_img = scale_img(deterioration_overlay_img)
@@ -248,7 +249,7 @@ def heavy_damage(original_image):
     major_noise_3 = random.randint(1, 2)
     if random.uniform(0.0, 1.0) < 0.05:  # 010 noise data dir
         for i in range(major_noise_3):
-            deterioration_overlay_img = Image.open(dir_new + "011\\" + getRandomFile(dir_new + "011\\")).convert("RGBA")
+            deterioration_overlay_img = Image.open(dir_new + f"011{os.sep}" + getRandomFile(dir_new + f"011{os.sep}")).convert("RGBA")
             deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
             deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
             deterioration_overlay_img = scale_img(deterioration_overlay_img)
@@ -257,7 +258,7 @@ def heavy_damage(original_image):
     scratchy_noise_4 = random.randint(1, 5)
     if random.uniform(0.0, 1.0) < 0.8:  # 011 noise data dir
         for i in range(scratchy_noise_4):
-            deterioration_overlay_img = Image.open(dir_new + "012\\" + getRandomFile(dir_new + "012\\")).convert("RGBA")
+            deterioration_overlay_img = Image.open(dir_new + f"012{os.sep}" + getRandomFile(dir_new + f"012{os.sep}")).convert("RGBA")
             deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
             deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
             deterioration_overlay_img = scale_img(deterioration_overlay_img)
@@ -266,11 +267,11 @@ def heavy_damage(original_image):
     return original_image
 
 def medium_damage(original_image):
-    dir_new = r'C:\Users\37120\Documents\BachelorThesis\noise_data\\'
+    dir_new = r'/mnt/beegfs2/home/leo01/noise_data/'
     oval_noise = random.randint(0, 2)
     if random.uniform(0.0, 1.0) < 0.1:  # 001 noise data dir
         for i in range(oval_noise):
-            deterioration_overlay_img = Image.open(dir_new + "001\\" + getRandomFile(dir_new + "001\\")).convert("RGBA")
+            deterioration_overlay_img = Image.open(dir_new + f"001{os.sep}" + getRandomFile(dir_new + f"001{os.sep}")).convert("RGBA")
             deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
             deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
             deterioration_overlay_img = scale_img(deterioration_overlay_img)
@@ -279,7 +280,7 @@ def medium_damage(original_image):
     scratchy_noise = random.randint(1, 5)
     if random.uniform(0.0, 1.0) < 0.6:  # 002 noise data dir
         for i in range(scratchy_noise):
-            deterioration_overlay_img = Image.open(dir_new + "002\\" + getRandomFile(dir_new + "002\\")).convert("RGBA")
+            deterioration_overlay_img = Image.open(dir_new + f"002{os.sep}" + getRandomFile(dir_new + f"002{os.sep}")).convert("RGBA")
             deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
             deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
             deterioration_overlay_img = scale_img(deterioration_overlay_img)
@@ -288,7 +289,7 @@ def medium_damage(original_image):
     minor_noise_1 = random.randint(1, 2)
     if random.uniform(0.0, 1.0) < 0.15:  # 003 noise data dir
         for i in range(minor_noise_1):
-            deterioration_overlay_img = Image.open(dir_new + "003\\" + getRandomFile(dir_new + "003\\")).convert("RGBA")
+            deterioration_overlay_img = Image.open(dir_new + f"003{os.sep}" + getRandomFile(dir_new + f"003{os.sep}")).convert("RGBA")
             deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
             deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
             deterioration_overlay_img = scale_img(deterioration_overlay_img)
@@ -297,7 +298,7 @@ def medium_damage(original_image):
     minor_noise_2 = random.randint(1, 3)
     if random.uniform(0.0, 1.0) < 0.15:  # 004 noise data dir
         for i in range(minor_noise_2):
-            deterioration_overlay_img = Image.open(dir_new + "004\\" + getRandomFile(dir_new + "004\\")).convert("RGBA")
+            deterioration_overlay_img = Image.open(dir_new + f"004{os.sep}" + getRandomFile(dir_new + f"004{os.sep}")).convert("RGBA")
             deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
             deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
             deterioration_overlay_img = scale_img(deterioration_overlay_img)
@@ -306,7 +307,7 @@ def medium_damage(original_image):
     minor_noise_3 = random.randint(1, 2)
     if random.uniform(0.0, 1.0) < 0.1:  # 005 noise data dir
         for i in range(minor_noise_3):
-            deterioration_overlay_img = Image.open(dir_new + "005\\" + getRandomFile(dir_new + "005\\")).convert("RGBA")
+            deterioration_overlay_img = Image.open(dir_new + f"005{os.sep}" + getRandomFile(dir_new + f"005{os.sep}")).convert("RGBA")
             deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
             deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
             deterioration_overlay_img = scale_img(deterioration_overlay_img)
@@ -315,7 +316,7 @@ def medium_damage(original_image):
     major_noise_1 = random.randint(1, 2)
     if random.uniform(0.0, 1.0) < 0.02:  # 005 noise data dir
         for i in range(major_noise_1):
-            deterioration_overlay_img = Image.open(dir_new + "006\\" + getRandomFile(dir_new + "006\\")).convert("RGBA")
+            deterioration_overlay_img = Image.open(dir_new + f"006{os.sep}" + getRandomFile(dir_new + f"006{os.sep}")).convert("RGBA")
             deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
             deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
             deterioration_overlay_img = scale_img(deterioration_overlay_img)
@@ -324,14 +325,14 @@ def medium_damage(original_image):
     scratchy_noise_2 = random.randint(1, 5)
     if random.uniform(0.0, 1.0) < 0.6:  # 006 noise data dir
         for i in range(scratchy_noise_2):
-            deterioration_overlay_img = Image.open(dir_new + "007\\" + getRandomFile(dir_new + "007\\")).convert("RGBA")
+            deterioration_overlay_img = Image.open(dir_new + f"007{os.sep}" + getRandomFile(dir_new + f"007{os.sep}")).convert("RGBA")
             deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
             deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
             deterioration_overlay_img = scale_img(deterioration_overlay_img)
             original_image = blend_imgs(deterioration_overlay_img, original_image, random.uniform(0.45, 0.8))
 
     if random.uniform(0.0, 1.0) < 0.25:  # 007 grain effect
-        deterioration_overlay_img = Image.open(dir_new + "007\\" + getRandomFile(dir_new + "007\\")).convert("RGBA")
+        deterioration_overlay_img = Image.open(dir_new + f"007{os.sep}" + getRandomFile(dir_new + f"007{os.sep}")).convert("RGBA")
         deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
         deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
         deterioration_overlay_img = scale_img(deterioration_overlay_img)
@@ -340,7 +341,7 @@ def medium_damage(original_image):
     scratchy_noise_3 = random.randint(1, 5)
     if random.uniform(0.0, 1.0) < 0.6:  # 008 noise data dir
         for i in range(scratchy_noise_3):
-            deterioration_overlay_img = Image.open(dir_new + "009\\" + getRandomFile(dir_new + "009\\")).convert("RGBA")
+            deterioration_overlay_img = Image.open(dir_new + f"009{os.sep}" + getRandomFile(dir_new + f"009{os.sep}")).convert("RGBA")
             deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
             deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
             deterioration_overlay_img = scale_img(deterioration_overlay_img)
@@ -349,7 +350,7 @@ def medium_damage(original_image):
     major_noise_2 = random.randint(1, 2)
     if random.uniform(0.0, 1.0) < 0.02:  # 009 noise data dir
         for i in range(major_noise_2):
-            deterioration_overlay_img = Image.open(dir_new + "010\\" + getRandomFile(dir_new + "010\\")).convert("RGBA")
+            deterioration_overlay_img = Image.open(dir_new + f"010{os.sep}" + getRandomFile(dir_new + f"010{os.sep}")).convert("RGBA")
             deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
             deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
             deterioration_overlay_img = scale_img(deterioration_overlay_img)
@@ -358,7 +359,7 @@ def medium_damage(original_image):
     major_noise_3 = random.randint(1, 2)
     if random.uniform(0.0, 1.0) < 0.02:  # 010 noise data dir
         for i in range(major_noise_3):
-            deterioration_overlay_img = Image.open(dir_new + "011\\" + getRandomFile(dir_new + "011\\")).convert("RGBA")
+            deterioration_overlay_img = Image.open(dir_new + f"011{os.sep}" + getRandomFile(dir_new + f"011{os.sep}")).convert("RGBA")
             deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
             deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
             deterioration_overlay_img = scale_img(deterioration_overlay_img)
@@ -367,7 +368,7 @@ def medium_damage(original_image):
     scratchy_noise_4 = random.randint(1, 5)
     if random.uniform(0.0, 1.0) < 0.6:  # 011 noise data dir
         for i in range(scratchy_noise_4):
-            deterioration_overlay_img = Image.open(dir_new + "012\\" + getRandomFile(dir_new + "012\\")).convert("RGBA")
+            deterioration_overlay_img = Image.open(dir_new + f"012{os.sep}" + getRandomFile(dir_new + f"012{os.sep}")).convert("RGBA")
             deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
             deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
             deterioration_overlay_img = scale_img(deterioration_overlay_img)
@@ -376,11 +377,11 @@ def medium_damage(original_image):
     return original_image
 
 def low_damage(original_image):
-    dir_new = r'C:\Users\37120\Documents\BachelorThesis\noise_data\\'
+    dir_new = r'/mnt/beegfs2/home/leo01/noise_data/'
     oval_noise = random.randint(0, 2)
     if random.uniform(0.0, 1.0) < 0.01:  # 001 noise data dir
         for i in range(oval_noise):
-            deterioration_overlay_img = Image.open(dir_new + "001\\" + getRandomFile(dir_new + "001\\")).convert("RGBA")
+            deterioration_overlay_img = Image.open(dir_new + f"001{os.sep}" + getRandomFile(dir_new + f"001{os.sep}")).convert("RGBA")
             deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
             deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
             deterioration_overlay_img = scale_img(deterioration_overlay_img)
@@ -389,28 +390,28 @@ def low_damage(original_image):
     scratchy_noise = random.randint(1, 5)
     if random.uniform(0.0, 1.0) < 0.5:  # 002 noise data dir
         for i in range(scratchy_noise):
-            deterioration_overlay_img = Image.open(dir_new + "002\\" + getRandomFile(dir_new + "002\\")).convert("RGBA")
+            deterioration_overlay_img = Image.open(dir_new + f"002{os.sep}" + getRandomFile(dir_new + f"002{os.sep}")).convert("RGBA")
             deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
             deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
             deterioration_overlay_img = scale_img(deterioration_overlay_img)
             original_image = blend_imgs(deterioration_overlay_img, original_image, random.uniform(0.15, 0.35))
 
     if random.uniform(0.0, 1.0) < 0.05:  # 003 noise data dir
-        deterioration_overlay_img = Image.open(dir_new + "003\\" + getRandomFile(dir_new + "003\\")).convert("RGBA")
+        deterioration_overlay_img = Image.open(dir_new + f"003{os.sep}" + getRandomFile(dir_new + f"003{os.sep}")).convert("RGBA")
         deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
         deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
         deterioration_overlay_img = scale_img(deterioration_overlay_img)
         original_image = blend_imgs(deterioration_overlay_img, original_image, random.uniform(0.15, 0.25))
 
     if random.uniform(0.0, 1.0) < 0.01:  # 004 noise data dir
-        deterioration_overlay_img = Image.open(dir_new + "004\\" + getRandomFile(dir_new + "004\\")).convert("RGBA")
+        deterioration_overlay_img = Image.open(dir_new + f"004{os.sep}" + getRandomFile(dir_new + f"004{os.sep}")).convert("RGBA")
         deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
         deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
         deterioration_overlay_img = scale_img(deterioration_overlay_img)
         original_image = blend_imgs(deterioration_overlay_img, original_image, random.uniform(0.15, 0.20))
 
     if random.uniform(0.0, 1.0) < 0.01:  # 005 noise data dir
-        deterioration_overlay_img = Image.open(dir_new + "005\\" + getRandomFile(dir_new + "005\\")).convert("RGBA")
+        deterioration_overlay_img = Image.open(dir_new + f"005{os.sep}" + getRandomFile(dir_new + f"005{os.sep}")).convert("RGBA")
         deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
         deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
         deterioration_overlay_img = scale_img(deterioration_overlay_img)
@@ -419,14 +420,14 @@ def low_damage(original_image):
     scratchy_noise_2 = random.randint(1, 5)
     if random.uniform(0.0, 1.0) < 0.5:  # 006 noise data dir
         for i in range(scratchy_noise_2):
-            deterioration_overlay_img = Image.open(dir_new + "007\\" + getRandomFile(dir_new + "007\\")).convert("RGBA")
+            deterioration_overlay_img = Image.open(dir_new + f"007{os.sep}" + getRandomFile(dir_new + f"007{os.sep}")).convert("RGBA")
             deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
             deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
             deterioration_overlay_img = scale_img(deterioration_overlay_img)
             original_image = blend_imgs(deterioration_overlay_img, original_image, random.uniform(0.15, 0.35))
 
     if random.uniform(0.0, 1.0) < 0.45:  # 007 grain effect
-        deterioration_overlay_img = Image.open(dir_new + "007\\" + getRandomFile(dir_new + "007\\")).convert("RGBA")
+        deterioration_overlay_img = Image.open(dir_new + f"007{os.sep}" + getRandomFile(dir_new + f"007{os.sep}")).convert("RGBA")
         deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
         deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
         deterioration_overlay_img = scale_img(deterioration_overlay_img)
@@ -435,7 +436,7 @@ def low_damage(original_image):
     scratchy_noise_3 = random.randint(1, 5)
     if random.uniform(0.0, 1.0) < 0.5:  # 008 noise data dir
         for i in range(scratchy_noise_3):
-            deterioration_overlay_img = Image.open(dir_new + "009\\" + getRandomFile(dir_new + "009\\")).convert("RGBA")
+            deterioration_overlay_img = Image.open(dir_new + f"009{os.sep}" + getRandomFile(dir_new + f"009{os.sep}")).convert("RGBA")
             deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
             deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
             deterioration_overlay_img = scale_img(deterioration_overlay_img)
@@ -444,7 +445,7 @@ def low_damage(original_image):
     scratchy_noise_4 = random.randint(1, 5)
     if random.uniform(0.0, 1.0) < 0.6:  # 011 noise data dir
         for i in range(scratchy_noise_4):
-            deterioration_overlay_img = Image.open(dir_new + "012\\" + getRandomFile(dir_new + "012\\")).convert("RGBA")
+            deterioration_overlay_img = Image.open(dir_new + f"012{os.sep}" + getRandomFile(dir_new + f"012{os.sep}")).convert("RGBA")
             deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
             deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
             deterioration_overlay_img = scale_img(deterioration_overlay_img)
@@ -500,6 +501,7 @@ def process_file(paths, train, augment_type, folder, name_list):
         augmented_image = np.delete(augmented_image, 1, 2)
         greyscale_image = greyscale_image_list[it]
         file_name = f"{name_list[it]}"
+
         if train:
             generate_memmap(greyscale_image, augmented_image, location_train,folder,file_name, train=train)
         else:
@@ -507,15 +509,15 @@ def process_file(paths, train, augment_type, folder, name_list):
 
 
 def process_folder(path, train, augment_type, folder):
-    files = next(os.walk(path+"\\"))[2]
+    files = next(os.walk(path+f"{os.sep}"))[2]
     file_count = len(files)
     image_list = []
     name_list = []
 
-    for img_path in range(file_count):
-        image_list.append(f"{path}\\{img_path}.jpg")
-        name_list.append(f"{img_path}")
 
+    for img_path in range(file_count):
+        image_list.append(f"{path}{os.sep}{img_path}.jpg")
+        name_list.append(f"{img_path}")
 
     sublist = [image_list[i:i + 5] for i in range(0, len(image_list), 5)]
     sublist_names = [name_list[i:i + 5] for i in range(0, len(name_list), 5)]
@@ -524,9 +526,10 @@ def process_folder(path, train, augment_type, folder):
         raise Exception("Batch list path size is mot equals batch list name size.")
 
     for it, batch in enumerate(sublist):
+        #print(sublist_names[it])
         process_file(batch, train, augment_type, folder, sublist_names[it])
+        #print("Something happened")
 
-    return f"{path} augment success, with augment type {augment_type}"
 
 if __name__ == '__main__':
     files = next(os.walk(original_img_dir_train))[1]
@@ -540,34 +543,87 @@ if __name__ == '__main__':
     test_folder_list = []
 
     for it in range(file_count_train):
-        path = original_img_dir_train + f"\\{it}"
+        path = original_img_dir_train + f"{os.sep}{it}"
         train_folder_list.append(path)
 
     for it in range(file_count_test):
-        path = original_img_dir_test + f"\\{it}"
+        path = original_img_dir_test + f"{os.sep}{it}"
         test_folder_list.append(path)
 
     #Ready to start multiprocessing
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        futures = []
-        for it, path_train in enumerate(train_folder_list):
+    processes = []
+    multiprocessing.set_start_method('spawn', force=True)
+    it = 0
+    while True:
+        time.sleep(0.01)
+
+        if it == 80:
+            print("Last of the train data is being processed")
+            break
+
+        if len(processes) < 60:
+            worker_data = train_folder_list[it]
             if it < 954:
-                futures.append(executor.submit(process_folder, path=path_train, train = True, augment_type = 'low', folder=it))
+                new_worker = Process(target=process_folder, args=(worker_data, True, 'low', it))
+                new_worker.start()
+                processes.append(new_worker)
+                it+=1
             elif it > 954 and it < (984 + 98):
-                futures.append(executor.submit(process_folder, path=path_train, train=True, augment_type = 'medium', folder=it))
+                new_worker = Process(target=process_folder, args=(worker_data, True, 'medium', it))
+                new_worker.start()
+                processes.append(new_worker)
+                it += 1
             else:
-                futures.append(executor.submit(process_folder, path=path_train, train=True, augment_type = 'high', folder=it))
+                new_worker = Process(target=process_folder, args=(worker_data, True, 'high', it))
+                new_worker.start()
+                processes.append(new_worker)
+                it += 1
+
+        new_worker = []
+        for t in processes:
+            if t.is_alive():
+                new_worker.append(t)
+        processes = new_worker.copy()
+
+    for process in processes:
+        process.join()
 
 
-        for it, path_train in enumerate(test_folder_list):
+
+    processes = []
+    multiprocessing.set_start_method('spawn', force=True)
+    it = 0
+    while True:
+        time.sleep(0.01)
+
+        if it == len(test_folder_list):
+            print("Last of the train data is being processed")
+            break
+
+        if len(processes) < 60:
+            worker_data = test_folder_list[it]
             if it < 236:
-                futures.append(executor.submit(process_folder, path=path_train, train = False, augment_type = 'low', folder=it))
+                new_worker = Process(target=process_folder, args=(worker_data, False, 'low', it))
+                new_worker.start()
+                processes.append(new_worker)
+                it += 1
             elif it > 236 and it < (246 + 25):
-                futures.append(executor.submit(process_folder, path=path_train, train=False, augment_type = 'medium', folder=it))
+                new_worker = Process(target=process_folder, args=(worker_data, False, 'medium', it))
+                new_worker.start()
+                processes.append(new_worker)
+                it += 1
             else:
-                futures.append(executor.submit(process_folder, path=path_train, train=False, augment_type = 'high', folder=it))
+                new_worker = Process(target=process_folder, args=(worker_data, False, 'high', it))
+                new_worker.start()
+                processes.append(new_worker)
+                it += 1
 
+        new_worker = []
+        for t in processes:
+            if t.is_alive():
+                new_worker.append(t)
+        processes = new_worker.copy()
 
-        for future in concurrent.futures.as_completed(futures):
-            print(future.result())
+    for process in processes:
+        process.join()
 

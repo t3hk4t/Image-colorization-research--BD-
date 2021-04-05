@@ -26,17 +26,21 @@ cd /mnt/beegfs2/home/leo01/Bachelor_thesis/
 
 
 python taskgen.py \
--sequence_name first_hpc_run \
+-sequence_name conv2d_realu_radam \
 -template template_hpc.sh \
 -is_force_start True \
 -num_repeat 1 \
 -num_cuda_devices_per_task 1 \
 -num_tasks_in_parallel 1 \
--learning_rate 1e-2 5e-2 1e-3 5e-3 1e-4 5e-4 1e-5 \
--batch_size 3 \
--path_train /mnt/beegfs2/home/leo01/dataset_test_2/train \
--path_test /mnt/beegfs2/home/leo01/dataset_test_2/test \
--epochs 10
+-learning_rate 3e-4 \
+-batch_size 10 \
+-path_train /mnt/beegfs2/home/leo01/image_data/video_framed_memmap_dataset/train \
+-path_test /mnt/beegfs2/home/leo01/image_data/video_framed_memmap_dataset/test \
+-epochs 50 \
+-is_debug False \
+-conv3d_depth 1 \
+-expansion_rate 3 \
+
 
 #python taskgen.py \
 #-sequence_name unet_3plus_data_256_median_background_loss_compare \

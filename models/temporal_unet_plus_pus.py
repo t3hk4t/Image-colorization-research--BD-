@@ -21,7 +21,7 @@ class ResBlock(nn.Module):
         self.in_channels = in_channels
         self.out_channels = out_channels
 
-        self.conv1 = nn.Conv3d(in_channels, in_channels, kernel_size=kernel_size_first,
+        self.conv1 = nn.Conv3d(in_channels, in_channels, kernel_size=(kernel_size_first,kernel_size_first, kernel_size_first),
                                stride=1,
                                padding=int(kernel_size_first/2), bias=is_conv_bias)
 
@@ -32,7 +32,7 @@ class ResBlock(nn.Module):
         self.gn1 = nn.GroupNorm(num_channels=in_channels, num_groups=num_groups)
 
 
-        self.conv2 = nn.Conv3d(in_channels, out_channels, kernel_size=kernel_size,
+        self.conv2 = nn.Conv3d(in_channels, out_channels, kernel_size=(kernel_size,kernel_size, kernel_size),
                                stride=stride,
                                padding=padding, bias=is_conv_bias)
         self.gn2 = nn.GroupNorm(num_channels=out_channels, num_groups=math.ceil(out_channels/2))
@@ -40,11 +40,12 @@ class ResBlock(nn.Module):
         self.is_projection = False
         if stride > 1 or in_channels != out_channels:
             self.is_projection = True
-            self.conv_res = nn.Conv3d(in_channels, out_channels, kernel_size=3, stride=stride,
+            self.conv_res = nn.Conv3d(in_channels, out_channels, kernel_size=(3,3,3), stride=stride,
                                       padding=1, bias=is_conv_bias)
 
     def forward(self, x):
         # Batch, Channel, W
+        lol = nn.LeakyReLU(0.1) #changed to leaky relu
         residual = x
 
         out = self.conv1(x)

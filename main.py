@@ -20,7 +20,7 @@ from modules.file_utils import FileUtils
 from modules import tensorboard_utils
 from modules import radam
 from modules import logging_utils
-from modules_core import dummy_loader
+from modules_core import conv3d_dataloader
 from models import unetplusplus
 from models import temporal_unet_plus_pus
 from modules.csv_utils_2 import CsvUtils2
@@ -31,20 +31,20 @@ def main():
     parser.add_argument('-run_name', default=f'run_{time.time()}', type=str)
     parser.add_argument('-sequence_name', default=f'new_run', type=str)
     parser.add_argument('-is_cuda', default=True, type=lambda x: (str(x).lower() == 'true'))
-    parser.add_argument('-learning_rate', default=1e-4, type=float)
-    parser.add_argument('-batch_size', default=5, type=int)
-    parser.add_argument('-path_train', default=[r'C:\Users\37120\Documents\BachelorThesis\image_data\dataset_test_2\train'], nargs='*')
-    parser.add_argument('-path_test', default=[r'C:\Users\37120\Documents\BachelorThesis\image_data\dataset_test_2\test'], nargs='*')
+    parser.add_argument('-learning_rate', default=3e-4, type=float)
+    parser.add_argument('-batch_size', default=15, type=int)
+    parser.add_argument('-path_train', default=[r'C:\Users\37120\Documents\BachelorThesis\image_data\video_framed_memmap\train'], nargs='*')
+    parser.add_argument('-path_test', default=[r'C:\Users\37120\Documents\BachelorThesis\image_data\video_framed_memmap\test'], nargs='*')
     parser.add_argument('-data_workers', default=1, type=int)
-    parser.add_argument('-epochs', default=1000, type=int)
+    parser.add_argument('-epochs', default=50, type=int)
     parser.add_argument('-is_deep_supervision', default=True, type=lambda x: (str(x).lower() == 'true'))
-    parser.add_argument('-is_debug', default=True, type=lambda x: (str(x).lower() == 'true'))
-    parser.add_argument('-unet_depth', default=5, type=int)
-    parser.add_argument('-first_conv_channel_count', default=4, type=int)
-    parser.add_argument('-expansion_rate', default=2, type=int)
+    parser.add_argument('-is_debug', default=False, type=lambda x: (str(x).lower() == 'true'))
+    parser.add_argument('-unet_depth', default=6, type=int)
+    parser.add_argument('-first_conv_channel_count', default=8, type=int)
+    parser.add_argument('-expansion_rate', default=3, type=int)
     parser.add_argument('-continue_training', default=False, type=lambda x: (str(x).lower() == 'true'))
     parser.add_argument('-saved_model_path', default=r'C:\Users\37120\Documents\BachelorThesis\Bachelor thesis\save4', type=str)
-    parser.add_argument('-conv3d_depth', default=2, type=int) #ammount of pictures in conv3d
+    parser.add_argument('-conv3d_depth', default=5, type=int) #ammount of pictures in conv3d
 
     # TODO add more params and make more beautitfull cuz this file is a mess
     args, _ = parser.parse_known_args()
@@ -79,7 +79,7 @@ def main():
     MAX_LEN = 200  # limit max number of samples otherwise too slow training (on GPU use all samples / for final training)
     if USE_CUDA:
         MAX_LEN = None
-    data_loader_train, data_loader_test = dummy_loader.get_data_loaders(args)
+    data_loader_train, data_loader_test = conv3d_dataloader.get_data_loaders(args)
     model = temporal_unet_plus_pus.Model(args)
     loss_func = torch.nn.MSELoss()
     optimizer = radam.RAdam(model.parameters(), lr=args.learning_rate)
@@ -145,11 +145,11 @@ def main():
                     optimizer.zero_grad()
                     model.zero_grad()
                     y_prim = model.forward(x)
-                    loss = loss_func.forward(y_prim, y)
+                    loss = loss_func.forward(y_prim[:, 2, :, :], y[:,0,2,:,:])
                 else:
                     with torch.no_grad():
                         y_prim = model.forward(x)
-                        loss = loss_func.forward(y_prim, y)
+                        loss = loss_func.forward(y_prim[:, 2, :, :], y[:,0,2,:,:])
                 metrics_epoch[f'{stage}_loss'].append(loss.item())  # Tensor(0.1) => 0.1f
                 if data_loader == data_loader_train:
                     loss.backward()
@@ -164,13 +164,12 @@ def main():
                 meters[f'{stage}_loss'].add(loss.item())
 
                 if tensorboard_image_idx < 100 and data_loader == data_loader_test:
-                    for idx in range(x.shape[2]):
-                        if tensorboard_image_idx < 100:
-                            data = torch.cat([y[0,0,idx,:,:], x[0,0,idx,:,:], y_prim[0,idx,:,:]], 1)
-                            tensorboard_writer.add_image(f'sample_{tensorboard_image_idx}', data, dataformats='HW', global_step=epoch)
-                            tensorboard_image_idx += 1
-                        else:
-                            break
+                    if tensorboard_image_idx < 100:
+                        data = torch.cat([y[0,0,2,:,:], x[0,0,2,:,:], y_prim[0,2,:,:]], 1)
+                        tensorboard_writer.add_image(f'sample_{tensorboard_image_idx}', data, dataformats='HW', global_step=epoch)
+                        tensorboard_image_idx += 1
+                    else:
+                        break
 
         state['train_loss'] = meters['train_loss'].value()[0]
         state['test_loss'] = meters['test_loss'].value()[0]
