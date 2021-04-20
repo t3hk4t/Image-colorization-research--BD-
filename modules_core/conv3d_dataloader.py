@@ -4,9 +4,33 @@ import torch
 import numpy as np
 import json
 import random
+import time
 from modules import torch_utils
 from torch.utils.data import Dataset
 
+def translate(img, shift=10, direction='right', roll=True):
+    assert direction in ['right', 'left', 'down', 'up'], 'Directions should be top|up|left|right'
+    if direction == 'right':
+        right_slice = img[:, -shift:].copy()
+        img[:, shift:] = img[:, :-shift]
+        if roll:
+            img[:,:shift] = np.fliplr(right_slice)
+    if direction == 'left':
+        left_slice = img[:, :shift].copy()
+        img[:, :-shift] = img[:, shift:]
+        if roll:
+            img[:, -shift:] = left_slice
+    if direction == 'down':
+        down_slice = img[-shift:, :].copy()
+        img[shift:, :] = img[:-shift,:]
+        if roll:
+            img[:shift, :] = down_slice
+    if direction == 'up':
+        upper_slice = img[:shift, :].copy()
+        img[:-shift, :] = img[shift:, :]
+        if roll:
+            img[-shift:,:] = upper_slice
+    return img
 
 class SyntheticNoise3DDataset(Dataset):
     """Dataset with original and augmented images."""
@@ -19,19 +43,21 @@ class SyntheticNoise3DDataset(Dataset):
         self.sample = []
         self.conv3d_depth = conv3d_depth
         self.videos_dirs = []
+        self.train = train
 
         files = next(os.walk(paths[0]))[1]
         file_count = len(files)
 
         for it in range(file_count):
             if not train and is_debug:
-                path = paths[0] + f"{os.sep}{it+13}"
-                self.videos_dirs.append('C:\\Users\\37120\\Documents\\BachelorThesis\\image_data\\video_framed_memmap\\test\\13')
+                path = paths[0] + f"{os.sep}{it+15}"
+                self.videos_dirs.append(r'C:\Users\37120\Documents\BachelorThesis\image_data\video_framed_memmap_dataset2\test\13')
                 break
             else:
-                path = paths[0] + f"{os.sep}{it}"
-                self.videos_dirs.append(path)
-                if is_debug and it > 1:
+                if it % 15 == 0:
+                    path = paths[0] + f"{os.sep}{it}"
+                    self.videos_dirs.append(path)
+                if is_debug and it > 6:
                     break
 
         for idx, item in enumerate(self.videos_dirs):
@@ -41,9 +67,44 @@ class SyntheticNoise3DDataset(Dataset):
             for it in range(file_count):
                 path = item + f"{os.sep}{it}"
                 imgs_list.append(path)
-
-            imgs_list_len = len(imgs_list)
-
+            print(len(imgs_list))
+            imgs_list_len = len(imgs_list)-1
+            # if train:
+            #     for it in range(3):
+            #         self.sample = []
+            #         for idx in range(5):
+            #             self.sample.append(imgs_list[idx])
+            #         self.dataset_samples.append(self.sample.copy())
+            #
+            #     for i in range(1, 120, 1):
+            #         self.sample = []
+            #         for idx in range(5):
+            #             self.sample.append(imgs_list[i+idx])
+            #         self.dataset_samples.append(self.sample.copy())
+            #
+            #     for i in range(3):
+            #         self.sample = []
+            #         for idx in range(5):
+            #             self.sample.append(imgs_list[123 - 5 + idx])
+            #         self.dataset_samples.append(self.sample.copy())
+            # else:
+            #     for it in range(3):
+            #         self.sample = []
+            #         for idx in range(5):
+            #             self.sample.append(imgs_list[idx])
+            #         self.dataset_samples.append(self.sample.copy())
+            #
+            #     for i in range(1, 120, 1):
+            #         self.sample = []
+            #         for idx in range(5):
+            #             self.sample.append(imgs_list[i + idx])
+            #         self.dataset_samples.append(self.sample.copy())
+            #
+            #     for i in range(3):
+            #         self.sample = []
+            #         for idx in range(5):
+            #             self.sample.append(imgs_list[123 - 5 + idx])
+            #         self.dataset_samples.append(self.sample.copy())
             if train:
                 for it in range(3):
                     self.sample = []
@@ -51,8 +112,7 @@ class SyntheticNoise3DDataset(Dataset):
                         self.sample.append(imgs_list[idx])
                     self.dataset_samples.append(self.sample.copy())
 
-
-                for i in range(1, 220, 1):
+                for i in range(1, len(imgs_list) - 6, 1):
                     self.sample = []
                     for idx in range(5):
                         self.sample.append(imgs_list[i+idx])
@@ -61,7 +121,7 @@ class SyntheticNoise3DDataset(Dataset):
                 for i in range(3):
                     self.sample = []
                     for idx in range(5):
-                        self.sample.append(imgs_list[225 - 5 + idx])
+                        self.sample.append(imgs_list[len(imgs_list) - 6 + 3 - 5 + idx])
                     self.dataset_samples.append(self.sample.copy())
             else:
                 for it in range(3):
@@ -69,8 +129,8 @@ class SyntheticNoise3DDataset(Dataset):
                     for idx in range(5):
                         self.sample.append(imgs_list[idx])
                     self.dataset_samples.append(self.sample.copy())
-
-                for i in range(1, 73-5, 1):
+                print(len(imgs_list))
+                for i in range(1, len(imgs_list) - 6, 1):
                     self.sample = []
                     for idx in range(5):
                         self.sample.append(imgs_list[i + idx])
@@ -79,7 +139,7 @@ class SyntheticNoise3DDataset(Dataset):
                 for i in range(3):
                     self.sample = []
                     for idx in range(5):
-                        self.sample.append(imgs_list[73 - 5 + idx])
+                        self.sample.append(imgs_list[len(imgs_list) - 6 + 3 - 5 + idx])
                     self.dataset_samples.append(self.sample.copy())
 
 
@@ -97,21 +157,57 @@ class SyntheticNoise3DDataset(Dataset):
             image = np.array(memmap[:], dtype='float32')
             img_arr.append(image.copy())
 
+        flip_vertical = random.randint(0, 2)
+        flip_horizontal = random.randint(0, 2)
+
+        shift = random.randint(1, 4)
+
         greyscale_image = img_arr[0][:, :, 0]
         augmented_image = img_arr[0][:, :, 1]
 
-        greyscale_image = np.expand_dims(greyscale_image, axis=0)
+        if flip_vertical == 1:
+            greyscale_image = np.fliplr(greyscale_image)
+            augmented_image = np.fliplr(augmented_image)
+        if flip_horizontal == 1:
+            augmented_image = np.flipud(augmented_image)
+            greyscale_image = np.flipud(greyscale_image)
+        roll = True
         augmented_image = np.expand_dims(augmented_image, axis=0)
         greyscale_image = np.expand_dims(greyscale_image, axis=0)
+        greyscale_image = np.expand_dims(greyscale_image, axis=0)
         augmented_image = np.expand_dims(augmented_image, axis=0)
-
+        shift_pixels = random.randint(0, 100)
         for i in range(1 , 5, 1):
-            img = img_arr[i][:,:,0]
-            img = np.expand_dims(img, axis=0)
-            img = np.expand_dims(img, axis=0)
-            greyscale_image = np.concatenate([greyscale_image, img], axis=0)
+            img1 = img_arr[i][:,:,0]
+            if flip_vertical == 1:
+                img1 = np.fliplr(img1)
+            if flip_horizontal == 1:
+                img1 = np.flipud(img1)
+            img1 = np.expand_dims(img1, axis=0)
+            if shift == 1:
+                img1 = np.roll(img1, shift_pixels, 1)
+            elif shift == 2:
+                img1 = np.roll(img1, shift_pixels, 2)
+            elif shift == 3:
+                img1 = np.roll(img1, -shift_pixels, 1)
+            elif shift == 4:
+                img1 = np.roll(img1, -shift_pixels, 2)
+            img1 = np.expand_dims(img1, axis=0)
+            greyscale_image = np.concatenate([greyscale_image, img1.copy()], axis=0)
             img = img_arr[i][:, :, 1]
+            if flip_vertical == 1:
+                img = np.fliplr(img)
+            if flip_horizontal == 1:
+                img = np.flipud(img)
             img = np.expand_dims(img, axis=0)
+            if shift == 1:
+                img = np.roll(img, shift_pixels, 1)
+            elif shift == 2:
+                img = np.roll(img, shift_pixels, 2)
+            elif shift == 3:
+                img = np.roll(img, -shift_pixels, 1)
+            elif shift == 4:
+                img = np.roll(img, -shift_pixels, 2)
             img = np.expand_dims(img, axis=0)
             augmented_image = np.concatenate([augmented_image, img], axis=0)
 
@@ -120,15 +216,18 @@ class SyntheticNoise3DDataset(Dataset):
         # import matplotlib.pyplot as plt
         # import matplotlib
         # matplotlib.use('TkAgg')
-        # plt.imshow(np.concatenate([greyscale_image[0,0,:,:], augmented_image[1,0,:,:]], axis=1), cmap='gray', vmin=0, vmax=100)
+        # plt.imshow(np.concatenate([greyscale_image[0,0,:,:], augmented_image[0,0,:,:]], axis=1), cmap='gray', vmin=0, vmax=100)
         # plt.show()
-        # plt.imshow(np.concatenate([greyscale_image[0,0,:,:], augmented_image[1,0,:,:]], axis=1), cmap='gray', vmin=0, vmax=100)
+        # plt.imshow(np.concatenate([greyscale_image[1,0,:,:], augmented_image[1,0,:,:]], axis=1), cmap='gray', vmin=0, vmax=100)
         # plt.show()
 
         greyscale_image = (greyscale_image - 0)/100
         augmented_image = (augmented_image - 0) / 100
         greyscale_image = np.swapaxes(greyscale_image, 0, 1)
         augmented_image = np.swapaxes(augmented_image, 0, 1)
+
+
+
         return {'greyscale_image': torch.from_numpy(greyscale_image),
                 'augmented_image': torch.from_numpy(augmented_image)}
 
@@ -148,7 +247,7 @@ def get_data_loaders(args):
                                                    batch_size=args.batch_size,
                                                    num_workers=args.data_workers,
                                                    pin_memory=True,
-                                                   shuffle=False,
+                                                   shuffle=True,
                                                    drop_last=True)
 
     return data_loader_train, data_loader_test

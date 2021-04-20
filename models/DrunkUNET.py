@@ -9,21 +9,21 @@ import modules.torch_utils as torch_utils
 
 
 class ResBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, is_conv_bias=False, kernel_size=3, stride=1, is_first_layer=False):
+    def __init__(self, in_channels, out_channels, is_conv_bias=False, kernel_size=(3,3,3), stride=1, is_first_layer=False, is_backbone = False):
         super().__init__()
 
         kernel_size_first = kernel_size
-        padding = int(kernel_size/2)
-        if kernel_size % 2 == 0:
-            kernel_size_first = kernel_size - 1
-            padding -= 1
+        padding = (0, int(kernel_size[1]/2), int(kernel_size[1]/2))
+        if kernel_size[1] % 2 == 0:
+            kernel_size_first = (1, kernel_size[1] - 1, kernel_size[1] - 1)
+            padding = (0, padding[1] -1, padding[2] -1 )
 
         self.in_channels = in_channels
         self.out_channels = out_channels
 
-        self.conv1 = nn.Conv3d(in_channels, in_channels, kernel_size=(kernel_size_first,kernel_size_first, kernel_size_first),
+        self.conv1 = nn.Conv3d(in_channels, in_channels, kernel_size=kernel_size,
                                stride=1,
-                               padding=int(kernel_size_first/2), bias=is_conv_bias)
+                               padding=(0, int(kernel_size_first[1]/2) ,int(kernel_size_first[1]/2)), bias=is_conv_bias)
 
         # added hack for images with channel count not dividable by 2
         num_groups = math.ceil(in_channels/2)
@@ -32,7 +32,7 @@ class ResBlock(nn.Module):
         self.gn1 = nn.GroupNorm(num_channels=in_channels, num_groups=num_groups)
 
 
-        self.conv2 = nn.Conv3d(in_channels, out_channels, kernel_size=(kernel_size,kernel_size, kernel_size),
+        self.conv2 = nn.Conv3d(in_channels, out_channels, kernel_size=kernel_size,
                                stride=stride,
                                padding=padding, bias=is_conv_bias)
         self.gn2 = nn.GroupNorm(num_channels=out_channels, num_groups=math.ceil(out_channels/2))
@@ -40,8 +40,8 @@ class ResBlock(nn.Module):
         self.is_projection = False
         if stride > 1 or in_channels != out_channels:
             self.is_projection = True
-            self.conv_res = nn.Conv3d(in_channels, out_channels, kernel_size=(3,3,3), stride=stride,
-                                      padding=1, bias=is_conv_bias)
+            self.conv_res = nn.Conv3d(in_channels, out_channels, kernel_size=kernel_size, stride=stride,
+                                      padding=(0,1,1), bias=is_conv_bias)
 
     def forward(self, x):
         # Batch, Channel, W
@@ -55,6 +55,7 @@ class ResBlock(nn.Module):
 
         if self.is_projection:
             residual = self.conv_res(x)
+
 
         out += residual
         out = torch.relu(out)
@@ -95,12 +96,14 @@ class Model(nn.Module):
                 channels_in = self.channels[idx]
                 if idx_depth > 0:
                     channels_in = self.channels[idx+1] * idx_depth + self.channels[idx+2]
-                module_list.append(ResBlock(channels_in, self.channels[idx+1]))
+                    module_list.append(ResBlock(channels_in, self.channels[idx+1], kernel_size = (1,3,3)))
+                else:
+                    module_list.append(ResBlock(channels_in, self.channels[idx + 1], kernel_size = (1,3,3)))
             self.module_depth_list.append(module_list)
 
         self.output_modules_list = torch.nn.ModuleList()
         for _ in range(self.output_count):
-            self.output_modules_list.append(nn.Conv3d(self.channels[1], self.class_count, kernel_size=1, bias=False))
+            self.output_modules_list.append(nn.Conv3d(self.channels[1], self.class_count, kernel_size=(5, 1, 1), bias=False))
 
         torch_utils.init_parameters(self)
 
@@ -152,4 +155,6 @@ class Model(nn.Module):
             output += module(x)
         output /= self.output_count
         # added for more stable output
-        return torch.sigmoid(output)
+        output = torch.sigmoid(output)
+
+        return output.squeeze(1)

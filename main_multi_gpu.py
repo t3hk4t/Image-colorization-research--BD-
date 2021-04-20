@@ -1,3 +1,4 @@
+
 import os
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
@@ -5,6 +6,7 @@ import torch
 import numpy as np
 import matplotlib
 import logging
+import torch.nn as nn
 import argparse
 from skimage import color
 from torch.utils.tensorboard import SummaryWriter
@@ -21,27 +23,27 @@ from modules import tensorboard_utils
 from modules import radam
 from modules import logging_utils
 from modules_core import conv3d_dataloader
+from modules import loss_functions
 from models import unetplusplus
 from models import temporal_unet_plus_pus
-from models import DrunkUNET
 from modules.csv_utils_2 import CsvUtils2
-
+from models import DrunkUNET
 
 def main():
     parser = argparse.ArgumentParser(description='Model trainer')
     parser.add_argument('-run_name', default=f'run_{time.time()}', type=str)
-    parser.add_argument('-sequence_name', default=f'temporal_unet_memmap3', type=str)
+    parser.add_argument('-sequence_name', default=f'temporal_unet_memmap2', type=str)
     parser.add_argument('-is_cuda', default=True, type=lambda x: (str(x).lower() == 'true'))
     parser.add_argument('-learning_rate', default=3e-4, type=float)
-    parser.add_argument('-batch_size', default=4, type=int)
-    parser.add_argument('-path_train', default=[r'C:\Users\37120\Documents\BachelorThesis\image_data\video_framed_memmap2\train'], nargs='*')
-    parser.add_argument('-path_test', default=[r'C:\Users\37120\Documents\BachelorThesis\image_data\video_framed_memmap2\test'], nargs='*')
+    parser.add_argument('-batch_size', default=10, type=int)
+    parser.add_argument('-path_train', default=[r'/mnt/beegfs2/home/leo01/image_data/video_framed_memmap_dataset/train/'], nargs='*')
+    parser.add_argument('-path_test', default=[r'/mnt/beegfs2/home/leo01/image_data/video_framed_memmap_dataset/test/'], nargs='*')
     parser.add_argument('-data_workers', default=1, type=int)
     parser.add_argument('-epochs', default=50, type=int)
     parser.add_argument('-is_deep_supervision', default=True, type=lambda x: (str(x).lower() == 'true'))
     parser.add_argument('-is_debug', default=False, type=lambda x: (str(x).lower() == 'true'))
     parser.add_argument('-unet_depth', default=5, type=int)
-    parser.add_argument('-first_conv_channel_count', default=2, type=int)
+    parser.add_argument('-first_conv_channel_count', default=6, type=int)
     parser.add_argument('-expansion_rate', default=2, type=int)
     parser.add_argument('-continue_training', default=False, type=lambda x: (str(x).lower() == 'true'))
     parser.add_argument('-conv3d_depth', default=5, type=int) #ammount of pictures in conv3d
@@ -81,6 +83,14 @@ def main():
         MAX_LEN = None
     data_loader_train, data_loader_test = conv3d_dataloader.get_data_loaders(args)
     model = DrunkUNET.Model(args)
+
+    if torch.cuda.device_count() > 1:
+        print("Let's use", torch.cuda.device_count(), "GPUs!")
+        # dim = 0 [30, xxx] -> [10, ...], [10, ...], [10, ...] on 3 GPUs
+        model = nn.DataParallel(model, device_ids=[0])
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    model.to(device)
+
     loss_func = torch.nn.MSELoss()
     optimizer = radam.RAdam(model.parameters(), lr=args.learning_rate)
 
@@ -93,8 +103,7 @@ def main():
     #     model.train()
 
     if USE_CUDA:
-        model = model.cuda()
-        loss_func = loss_func.cuda()
+        loss_func = loss_func.to(device)
     metrics = {}
 
     for stage in ['train', 'test']:
@@ -112,18 +121,21 @@ def main():
         'epoch' : 0,
         'train_loss': -1.0,
         'test_loss' : -1.0,
-        'best_loss': -1.0
+        'best_loss': -1.0,
+        'epoch_time': -1.0,
+        'average_epoch_time': -1.0,
     }
 
     hP = args.__dict__
     hP['path_train'] = ''
     hP['path_test'] = ''
+    time_list = []
 
     for epoch in range(last_epoch, args.epochs):
         tensorboard_image_idx = 0
         for key in meters.keys():
             meters[key].reset()
-
+        t0 = time.time()
         for data_loader in [data_loader_train, data_loader_test]:
             metrics_epoch = {key: [] for key in metrics.keys()}
             stage = 'train'
@@ -138,8 +150,8 @@ def main():
                 y = y.float()
                 x = x.float()
                 if USE_CUDA:
-                    x = x.cuda()
-                    y = y.cuda()
+                    x = x.to(device)
+                    y = y.to(device)
 
                 if data_loader == data_loader_train:
                     optimizer.zero_grad()
@@ -174,11 +186,20 @@ def main():
         state['train_loss'] = meters['train_loss'].value()[0]
         state['test_loss'] = meters['test_loss'].value()[0]
         state['epoch'] = epoch
+        state['epoch_time'] = time.time() - t0
+        time_list.append(time.time() - t0)
+        state['average_epoch_time'] = sum(time_list)/len(time_list)
         if epoch == 0:
             state['best_loss'] = state['test_loss']
         elif state['test_loss'] < state['best_loss']:
             state['best_loss'] = state['test_loss']
-            torch.save(model.state_dict(), os.path.join(path_run, 'best_loss.pt'))
+            torch.save({
+                'epoch': epoch,
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'module_state_dict' : model.module.state_dict(),
+            }, os.path.join(path_run, 'best_loss.pt'))
+
 
 
         tensorboard_writer.add_hparams(
@@ -207,6 +228,7 @@ def main():
             'epoch': epoch,
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
+            'module' : model.module.state_dict(),
         }, os.path.join(path_run, 'last_checkpoint.pt'))
         tensorboard_writer.flush()
     tensorboard_writer.close()
@@ -215,4 +237,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-# TODO - Logging at the end of epoch

@@ -13,16 +13,21 @@ import torchvision
 import time
 from datetime import datetime
 import torchnet as tnt
+from modules import loss_functions
+
 matplotlib.use('TkAgg')
 import torch.utils.data
-
+from piq import MultiScaleSSIMLoss
 from modules.file_utils import FileUtils
 from modules import tensorboard_utils
 from modules import radam
 from modules import logging_utils
+from models import autoencoder_ref
 from modules_core import conv3d_dataloader
 from models import unetplusplus
 from models import temporal_unet_plus_pus
+from models import TUNETREF
+from modules import psnr
 from models import DrunkUNET
 from modules.csv_utils_2 import CsvUtils2
 
@@ -30,18 +35,21 @@ from modules.csv_utils_2 import CsvUtils2
 def main():
     parser = argparse.ArgumentParser(description='Model trainer')
     parser.add_argument('-run_name', default=f'run_{time.time()}', type=str)
-    parser.add_argument('-sequence_name', default=f'temporal_unet_memmap3', type=str)
+    parser.add_argument('-sequence_name', default=f'temporal_autoencoder_memmap3', type=str)
+    parser.add_argument('-saved_model_path',
+                        default=r'C:\Users\37120\Documents\BachelorThesis\results\temporal_autoencoder_memmap3\run_1618229476.3763812-21-04-12--12-11-16\last_checkpoint.pt',
+                        type=str)
     parser.add_argument('-is_cuda', default=True, type=lambda x: (str(x).lower() == 'true'))
     parser.add_argument('-learning_rate', default=3e-4, type=float)
-    parser.add_argument('-batch_size', default=4, type=int)
-    parser.add_argument('-path_train', default=[r'C:\Users\37120\Documents\BachelorThesis\image_data\video_framed_memmap2\train'], nargs='*')
-    parser.add_argument('-path_test', default=[r'C:\Users\37120\Documents\BachelorThesis\image_data\video_framed_memmap2\test'], nargs='*')
+    parser.add_argument('-batch_size', default=2, type=int)
+    parser.add_argument('-path_train', default=[r'C:\Users\37120\Documents\BachelorThesis\image_data\video_framed_memmap_dataset2\train'], nargs='*')
+    parser.add_argument('-path_test', default=[r'C:\Users\37120\Documents\BachelorThesis\image_data\video_framed_memmap_dataset2\test'], nargs='*')
     parser.add_argument('-data_workers', default=1, type=int)
-    parser.add_argument('-epochs', default=50, type=int)
+    parser.add_argument('-epochs', default=200, type=int)
     parser.add_argument('-is_deep_supervision', default=True, type=lambda x: (str(x).lower() == 'true'))
     parser.add_argument('-is_debug', default=False, type=lambda x: (str(x).lower() == 'true'))
-    parser.add_argument('-unet_depth', default=5, type=int)
-    parser.add_argument('-first_conv_channel_count', default=2, type=int)
+    parser.add_argument('-unet_depth', default=4, type=int)
+    parser.add_argument('-first_conv_channel_count', default=6, type=int)
     parser.add_argument('-expansion_rate', default=2, type=int)
     parser.add_argument('-continue_training', default=False, type=lambda x: (str(x).lower() == 'true'))
     parser.add_argument('-conv3d_depth', default=5, type=int) #ammount of pictures in conv3d
@@ -49,9 +57,9 @@ def main():
     # TODO add more params and make more beautitfull cuz this file is a mess
     args, _ = parser.parse_known_args()
 
-    path_sequence = f'./results/{args.sequence_name}'
+    path_sequence = f'../results/{args.sequence_name}'
     args.run_name += ('-' + datetime.utcnow().strftime(f'%y-%m-%d--%H-%M-%S'))
-    path_run = f'./results/{args.sequence_name}/{args.run_name}'
+    path_run = f'../results/{args.sequence_name}/{args.run_name}'
     FileUtils.createDir(path_run)
     FileUtils.writeJSON(f'{path_run}/args.json', vars(args))
     USE_CUDA = torch.cuda.is_available()
@@ -80,17 +88,20 @@ def main():
     if USE_CUDA:
         MAX_LEN = None
     data_loader_train, data_loader_test = conv3d_dataloader.get_data_loaders(args)
-    model = DrunkUNET.Model(args)
+    #model = autoencoder_ref.Model()
+    model = temporal_unet_plus_pus.Model(args)
+    #loss_func = psnr.PSNR()
+    #loss_func = torch.nn.MSELoss()
+    #loss_func = loss_functions.MS_SSIM_L1_LOSS(compensation=1.0)
     loss_func = torch.nn.MSELoss()
     optimizer = radam.RAdam(model.parameters(), lr=args.learning_rate)
 
-
-    # if(args.continue_training):
-    #     checkpoint = torch.load(args.saved_model_path)
-    #     model.load_state_dict(checkpoint['model_state_dict'])
-    #     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-    #     last_epoch = checkpoint['epoch']
-    #     model.train()
+    if(args.continue_training):
+        checkpoint = torch.load(args.saved_model_path)
+        model.load_state_dict(checkpoint['model_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        last_epoch = checkpoint['epoch']
+        model.train()
 
     if USE_CUDA:
         model = model.cuda()
@@ -134,7 +145,6 @@ def main():
 
                 y = batch['greyscale_image']
                 x = batch['augmented_image']
-
                 y = y.float()
                 x = x.float()
                 if USE_CUDA:
@@ -145,11 +155,12 @@ def main():
                     optimizer.zero_grad()
                     model.zero_grad()
                     y_prim = model.forward(x)
-                    loss = loss_func.forward(y_prim[:, 0, :, :], y[:,0,2,:,:])
+
+                    loss = loss_func.forward(y_prim[:, :, 2, :,:], y[:,:,2,:,:])
                 else:
                     with torch.no_grad():
                         y_prim = model.forward(x)
-                        loss = loss_func.forward(y_prim[:, 0, :, :], y[:,0,2,:,:])
+                        loss = loss_func.forward(y_prim[:, :, 2, :,:], y[:,:,2,:,:])
                 metrics_epoch[f'{stage}_loss'].append(loss.item())  # Tensor(0.1) => 0.1f
                 if data_loader == data_loader_train:
                     loss.backward()
@@ -165,7 +176,7 @@ def main():
 
                 if tensorboard_image_idx < 100 and data_loader == data_loader_test:
                     if tensorboard_image_idx < 100:
-                        data = torch.cat([y[0,0,2,:,:], x[0,0,2,:,:], y_prim[0,0,:,:]], 1)
+                        data = torch.cat([y[0,0,2,:,:], x[0,0,2,:,:], y_prim[0,0,2,:,:]], 1)
                         tensorboard_writer.add_image(f'sample_{tensorboard_image_idx}', data, dataformats='HW', global_step=epoch)
                         tensorboard_image_idx += 1
                     else:
