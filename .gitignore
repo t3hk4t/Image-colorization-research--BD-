@@ -8,3 +8,7 @@ modules/__pycache__/
 .idea/
 
 modules_core/__pycache__/
+
+data/
+
+models/__pycache__/

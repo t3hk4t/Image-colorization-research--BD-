@@ -17,7 +17,6 @@ from modules import loss_functions
 
 matplotlib.use('TkAgg')
 import torch.utils.data
-from piq import MultiScaleSSIMLoss
 from modules.file_utils import FileUtils
 from modules import tensorboard_utils
 from modules import radam

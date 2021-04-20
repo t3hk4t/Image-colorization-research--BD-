@@ -1,6 +1,6 @@
 import math
 import torch
-from torch.optim.optimizer import Optimizer, required
+from torch.optim.optimizer import Optimizer
 
 class RAdam(Optimizer):
 
@@ -42,8 +42,8 @@ class RAdam(Optimizer):
                 exp_avg, exp_avg_sq = state['exp_avg'], state['exp_avg_sq']
                 beta1, beta2 = group['betas']
 
-                exp_avg_sq.mul_(beta2).addcmul_(1 - beta2, grad, grad)
-                # exp_avg_sq.mul_(beta2).addcmul_(grad, grad, value=1 - beta2) # uncomment and use when all servers using atleast pytorch 1.5 to get rid of deprecation warnings
+                # exp_avg_sq.mul_(beta2).addcmul_(1 - beta2, grad, grad)
+                exp_avg_sq.mul_(beta2).addcmul_(grad, grad, value=1 - beta2) # uncomment and use when all servers using atleast pytorch 1.5 to get rid of deprecation warnings
                 exp_avg.mul_(beta1).add_(1 - beta1, grad)
 
                 state['step'] += 1

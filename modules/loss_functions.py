@@ -1,20 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from piq import MultiScaleSSIMLoss
-
-class MultiScaleSSIMandL1LOSS(nn.Module):
-
-    def __init__(self, alfa = 0.84):
-        super(MultiScaleSSIMandL1LOSS, self).__init__()
-        self.alfa = alfa
-        self.l1loss = nn.L1Loss()
-        self.mssim = MultiScaleSSIMLoss()
-
-    def forward(self, x, y):
-        l1loss = self.l1loss(x.clone(), y.clone())
-        mssim = self.mssim(x.clone(), y.clone())
-        return self.alfa*l1loss + (1- self.alfa)*mssim
 
 
 class MS_SSIM_L1_LOSS(nn.Module):
@@ -67,6 +53,9 @@ class MS_SSIM_L1_LOSS(nn.Module):
         return torch.outer(gaussian_vec, gaussian_vec)
 
     def forward(self, x, y):
+        if len(x.size()) == 3:
+            x = x.unsqueeze(dim=1) #Batch, Channel, Width, Height
+            y = y.unsqueeze(dim=1) #Batch, Channel, Width, Height
         b, c, h, w = x.shape
         mux = F.conv2d(x, self.g_masks, groups=1, padding=self.pad)
         muy = F.conv2d(y, self.g_masks, groups=1, padding=self.pad)
