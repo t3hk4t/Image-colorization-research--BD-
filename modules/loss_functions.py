@@ -56,7 +56,7 @@ class MS_SSIM_L1_LOSS(nn.Module):
         if len(x.size()) == 3:
             x = x.unsqueeze(dim=1) #Batch, Channel, Width, Height
             y = y.unsqueeze(dim=1) #Batch, Channel, Width, Height
-        b, c, h, w = x.shape
+
         mux = F.conv2d(x, self.g_masks, groups=1, padding=self.pad)
         muy = F.conv2d(y, self.g_masks, groups=1, padding=self.pad)
 

@@ -41,8 +41,6 @@ class SyntheticNoise2DDataset(Dataset):
                     with open(img_dir.path + f'{os.sep}data.json') as json_file:
                         train_json = json.load(json_file)
 
-                    print(img_dir.path + f'{os.sep}data.json')
-
                     filename = train_json["filename"]
                     shape = train_json["shape"]
 
@@ -54,7 +52,6 @@ class SyntheticNoise2DDataset(Dataset):
                                                  shape=(shape[0], shape[1], shape[2]))
                     self.dataset_samples.append(memmap)
 
-        print(f"{len(self.dataset_samples)} samples succesfully loaded")
 
     def __len__(self):
         return len(self.dataset_samples)

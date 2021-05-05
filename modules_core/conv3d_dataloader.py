@@ -54,9 +54,8 @@ class SyntheticNoise3DDataset(Dataset):
                 self.videos_dirs.append(r'C:\Users\37120\Documents\BachelorThesis\image_data\video_framed_memmap_dataset2\test\13')
                 break
             else:
-                if it % 15 == 0:
-                    path = paths[0] + f"{os.sep}{it}"
-                    self.videos_dirs.append(path)
+                path = paths[0] + f"{os.sep}{it}"
+                self.videos_dirs.append(path)
                 if is_debug and it > 6:
                     break
 
@@ -67,7 +66,6 @@ class SyntheticNoise3DDataset(Dataset):
             for it in range(file_count):
                 path = item + f"{os.sep}{it}"
                 imgs_list.append(path)
-            print(len(imgs_list))
             imgs_list_len = len(imgs_list)-1
             # if train:
             #     for it in range(3):
@@ -129,7 +127,6 @@ class SyntheticNoise3DDataset(Dataset):
                     for idx in range(5):
                         self.sample.append(imgs_list[idx])
                     self.dataset_samples.append(self.sample.copy())
-                print(len(imgs_list))
                 for i in range(1, len(imgs_list) - 6, 1):
                     self.sample = []
                     for idx in range(5):
@@ -141,6 +138,7 @@ class SyntheticNoise3DDataset(Dataset):
                     for idx in range(5):
                         self.sample.append(imgs_list[len(imgs_list) - 6 + 3 - 5 + idx])
                     self.dataset_samples.append(self.sample.copy())
+        print(len(self.dataset_samples))
 
 
     def __len__(self):

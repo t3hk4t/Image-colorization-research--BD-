@@ -597,9 +597,143 @@ def process_folder(path, train, augment_type, folder):
         raise Exception("Batch list path size is mot equals batch list name size.")
 
     for it, batch in enumerate(sublist):
-        #print(sublist_names[it])
         process_file(batch, train, augment_type, folder, sublist_names[it])
-        #print("Something happened")
+
+
+def process_file_inference(paths, augment_type, name_list):
+    greyscale_image_list = []
+    original_image_list = []
+
+    for path in paths:
+        greyscale_image = Image.open(path).convert("RGB")
+        greyscale_image = greyscale_image.resize((480, 320), Image.ANTIALIAS)
+        image_lab = color.rgb2lab(greyscale_image)
+        image_lab[..., 1] = image_lab[..., 2] = 0
+        greyscale_image = np.asarray(image_lab)
+        greyscale_image = np.delete(greyscale_image, 1,2)
+        greyscale_image = np.delete(greyscale_image, 1,2)
+        greyscale_image_list.append(np.copy(greyscale_image))
+        # FINAL GREYSCALE IMAGE THAT IS (320, 480)
+
+
+        original_image = (Image.open(path)).convert("RGB")
+        original_image = original_image.resize((480, 320), Image.ANTIALIAS)
+        if augment_type == 'high':
+            original_image = heavy_damage(original_image)
+        elif augment_type == 'medium':
+            original_image = medium_damage(original_image)
+        else:
+            original_image = low_damage(original_image)
+
+        original_image_list.append(original_image.copy())
+
+
+    opacity = random.uniform(0.5, 0.7)
+    grain = bool(random.getrandbits(1))
+    if grain:
+        for it, original_image in enumerate(original_image_list):
+            deterioration_overlay_img = Image.open(
+                noise_dir + f"008{os.sep}" + getRandomFile(noise_dir + f"008{os.sep}")).convert("RGB")
+            deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
+            deterioration_overlay_img = basic_deterioration(deterioration_overlay_img)
+            deterioration_overlay_img = scale_img(deterioration_overlay_img)
+            original_image = blend_imgs(deterioration_overlay_img, original_image, opacity,
+                                        False)
+            original_image_list[it] = original_image.copy()
+
+    opacity = random.uniform(0, 0.15)
+    reverse = bool(random.getrandbits(1))
+    for it, original_image in enumerate(original_image_list):
+        deterioration_overlay_img = np.random.normal(255. / 2, 255. / 10, (320, 480))
+        deterioration_overlay_img = Image.fromarray(deterioration_overlay_img)
+        deterioration_overlay_img = deterioration_overlay_img.convert('RGB')
+        original_image = blend_imgs(deterioration_overlay_img, original_image, opacity,
+                                    reverse)
+        original_image_list[it] = original_image.copy()
+
+    brutal_scratches = random.uniform(0, 1)
+
+    if brutal_scratches < 0.5:
+        ammount = random.randint(300,1000)
+        for it, original_image in enumerate(original_image_list):
+            deterioration_overlay_img = Image.open(
+                noise_dir + f"002{os.sep}" + getRandomFile(noise_dir + f"002{os.sep}")).convert("RGB")
+            deterioration_overlay_img = deterioration_overlay_img.resize((480, 320), Image.ANTIALIAS)
+            for i in range(ammount):
+                #opacity = random.uniform(0.015, 0.085)
+                opacity = random.uniform(0.001, 0.009)
+                deterioration_overlay_img2 = Image.open(
+                    noise_dir + f"002{os.sep}" + getRandomFile(noise_dir + f"002{os.sep}")).convert("RGB")
+                deterioration_overlay_img2 = deterioration_overlay_img2.resize((480, 320), Image.ANTIALIAS)
+                deterioration_overlay_img2 = basic_deterioration(deterioration_overlay_img2)
+                deterioration_overlay_img2 = scale_img(deterioration_overlay_img2)
+                deterioration_overlay_img = blend_imgs(deterioration_overlay_img2, deterioration_overlay_img, opacity,
+                                            reverse)
+
+            print(f"{type(deterioration_overlay_img)}, {type(original_image)}")
+
+            original_image = blend_imgs(deterioration_overlay_img, original_image, opacity,
+                                            reverse)
+
+
+
+            original_image_list[it] = original_image.copy()
+
+    if random.randint(0, 100) <= 100:  # Blur
+        blur1 = random.uniform(0.5, 1.3)
+        blur2 = random.uniform(1,2)
+        blur_type = random.randint(1, 2)
+        for it, item in enumerate(original_image_list):
+            if blur_type == 1:
+                item = item.filter(ImageFilter.BoxBlur(blur1))
+            elif blur_type == 2:
+                item = item.filter(ImageFilter.GaussianBlur(blur2))
+            original_image_list[it] = item.copy()
+
+
+    for it, img in enumerate(original_image_list):
+        rgb_image = img.convert('RGB')
+        image_lab = color.rgb2lab(rgb_image)
+        image_lab[..., 1] = image_lab[..., 2] = 0
+        augmented_image = np.asarray(image_lab)
+        augmented_image = np.delete(augmented_image, 1, 2)
+        augmented_image = np.delete(augmented_image, 1, 2)
+        greyscale_image = greyscale_image_list[it]
+        file_name = f"{name_list[it]}"
+        out_data = np.concatenate((greyscale_image, augmented_image), axis=2)
+        ref_img = out_data[:, :, 0]
+        ref_img2 = out_data[:, :, 1]
+        import matplotlib.pyplot as plt
+        plt.axis('off')
+        plt.imshow(ref_img2, 'gray')
+        #plt.show()
+        plt.savefig(f'C:\\Users\\37120\\Documents\\results\\split_frames_augmented\\{file_name}.jpg', bbox_inches='tight', transparent=True, pad_inches=0)
+
+        #img = cv2.imwrite(f"C:\\Users\\37120\\Documents\\results\\split_frames_augmented\\{name_list[it]}.jpg", image_rgb)
+        #print(image_lab)
+        #TODO Saveimage generate_memmap(greyscale_image, augmented_image, location_train,folder,file_name, train=train)
+
+def process_folder_inference(path, augment_type):
+    files = next(os.walk(path+f"{os.sep}"))[2]
+    file_count = len(files)
+
+    image_list = []
+    name_list = []
+
+
+    for img_path in range(file_count):
+        image_list.append(f"{path}{os.sep}{img_path+79}.jpg")
+        name_list.append(f"{img_path+79}")
+
+    sublist = [image_list[i:i + 5] for i in range(0, len(image_list), 5)]
+    sublist_names = [name_list[i:i + 5] for i in range(0, len(name_list), 5)]
+
+    if len(sublist) != len(sublist_names):
+        raise Exception("Batch list path size is mot equals batch list name size.")
+
+    for it, batch in enumerate(sublist):
+        process_file_inference(batch, augment_type, sublist_names[it])
+        print("Batch done")
 
 
 if __name__ == '__main__':

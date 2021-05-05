@@ -23,10 +23,6 @@ from modules import tensorboard_utils
 from modules import radam
 from modules import logging_utils
 from modules.loss_functions import *
-from modules_core import conv3d_dataloader
-from models import unetplusplus
-from models import temporal_unet_plus_pus
-from models import DrunkUNET
 from modules.csv_utils_2 import CsvUtils2
 
 
@@ -36,18 +32,18 @@ def main():
     parser.add_argument('-sequence_name', default=f'temporal_unet_memmap3', type=str)
     parser.add_argument('-is_cuda', default=True, type=lambda x: (str(x).lower() == 'true'))
     parser.add_argument('-learning_rate', default=3e-4, type=float)
-    parser.add_argument('-batch_size', default=4, type=int)
-    parser.add_argument('-path_train', default=['C:\\Users\\vecin\\Documents\\PycharmProjects\\Research\\Image-colorization-research--BD-\\data\\train'], nargs='*')
-    parser.add_argument('-path_test', default=['C:\\Users\\vecin\\Documents\\PycharmProjects\\Research\\Image-colorization-research--BD-\\data\\test'], nargs='*')
-    parser.add_argument('-model', default='model_2_pretrained', type=str)
+    parser.add_argument('-batch_size', default=1, type=int)
+    parser.add_argument('-path_train', default=[r'C:\Users\37120\Documents\BachelorThesis\image_data\video_framed_memmap_dataset2\train'], nargs='*')
+    parser.add_argument('-path_test', default=[r'C:\Users\37120\Documents\BachelorThesis\image_data\video_framed_memmap_dataset2\test'], nargs='*')
+    parser.add_argument('-model', default='temporal_unet_plus_plus', type=str)
     parser.add_argument('-model_type', default='fcn_resnet50', type=str) # for pretrained
-    parser.add_argument('-datasource', default='conv2D_dataloader', type=str)
+    parser.add_argument('-datasource', default='conv3d_dataloader', type=str)
     parser.add_argument('-data_workers', default=1, type=int)
     parser.add_argument('-epochs', default=50, type=int)
     parser.add_argument('-is_deep_supervision', default=True, type=lambda x: (str(x).lower() == 'true'))
-    parser.add_argument('-is_debug', default=False, type=lambda x: (str(x).lower() == 'true'))
+    parser.add_argument('-is_debug', default=True, type=lambda x: (str(x).lower() == 'true'))
     parser.add_argument('-unet_depth', default=5, type=int)
-    parser.add_argument('-first_conv_channel_count', default=2, type=int)
+    parser.add_argument('-first_conv_channel_count', default=4, type=int)
     parser.add_argument('-expansion_rate', default=2, type=int)
     parser.add_argument('-continue_training', default=False, type=lambda x: (str(x).lower() == 'true'))
     parser.add_argument('-conv3d_depth', default=5, type=int) #ammount of pictures in conv3d
@@ -85,11 +81,13 @@ def main():
     get_data_loaders = getattr(__import__('modules_core.' + args.datasource, fromlist=['get_data_loaders']),
                                'get_data_loaders')
     data_loader_train, data_loader_test = get_data_loaders(args)
-
+    rootLogger.info(len(data_loader_train))
+    rootLogger.info(len(data_loader_test))
     Model = getattr(__import__('modules_core.' + args.model, fromlist=['Model']), 'Model')
     model = Model(args)
 
-    loss_func = torch.nn.MSELoss()
+    loss_func = MS_SSIM_L1_LOSS()
+    #loss_func = torch.nn.MSELoss()
     optimizer = radam.RAdam(model.parameters(), lr=args.learning_rate)
 
     if USE_CUDA:
@@ -160,19 +158,27 @@ def main():
                     optimizer.zero_grad()
                     model.zero_grad()
                     y_prim = model.forward(x)
-                    loss = loss_func.forward(y_prim, y)
+                    if args.model == "temporal_unet_plus_plus":
+                        loss = loss_func.forward(y_prim[:,2,:,:], y[:,0,2,:,:])
+                    else:
+                        loss = loss_func.forward(y_prim, y)
                 else:
                     with torch.no_grad():
                         y_prim = model.forward(x)
-                        loss = loss_func.forward(y_prim, y)
+                        if args.model == "temporal_unet_plus_plus":
+                            loss = loss_func.forward(y_prim[:,2,:,:], y[:, 0, 2, :, :])
+                        else:
+                            loss = loss_func.forward(y_prim, y)
 
                 if data_loader == data_loader_train:
                     loss.backward()
                     optimizer.step()
                     optimizer.zero_grad()
 
-
-                MS_SSIM_L1 = MS_SSIM_L1_LOSS().forward(y_prim.detach(), y).cpu()
+                if args.model == "temporal_unet_plus_plus":
+                    MS_SSIM_L1 = MS_SSIM_L1_LOSS().forward(y_prim.detach()[:,2,:,:], y[:,0,2,:,:]).cpu()
+                else:
+                    MS_SSIM_L1 = MS_SSIM_L1_LOSS().forward(y_prim.detach(), y).cpu()
                 mse = F.mse_loss(y_prim.detach(), y).cpu()
                 l1 = F.l1_loss(y_prim.detach(), y).cpu()
 
@@ -191,7 +197,10 @@ def main():
                 if tensorboard_image_idx < 100 and data_loader == data_loader_test:
                     for idx in range(x.shape[0]):
                         if tensorboard_image_idx < 100:
-                            data = torch.cat([y[idx,:,:], x[idx,:,:], y_prim[idx,:,:]], 1)
+                            if args.model == "temporal_unet_plus_plus":
+                                data = torch.cat([y[idx,0,2,:,:], x[idx,0,2,:,:], y_prim[idx,2,:,:]], 1)
+                            else:
+                                data = torch.cat([y[idx, :, :], x[idx, :, :], y_prim[idx, :, :]], 1)
                             tensorboard_writer.add_image(f'sample_{tensorboard_image_idx}', data, dataformats='HW', global_step=epoch)
                             tensorboard_image_idx += 1
                         else:

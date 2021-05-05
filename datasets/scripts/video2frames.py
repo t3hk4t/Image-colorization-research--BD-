@@ -1,7 +1,7 @@
 import cv2
 import os
 
-save_dir = r'C:\Users\37120\Documents\BachelorThesis\image_data\video_framed_dataset'
+save_dir = r'C:\Users\37120\Documents\results\inference_clean'
 dataset_dir = r'C:\Users\37120\Documents\BachelorThesis\image_data\video_dataset'
 
 def process_file(path, subtype, iter):
