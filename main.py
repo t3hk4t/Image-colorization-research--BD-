@@ -40,6 +40,7 @@ def main():
     parser.add_argument('-datasource', default='conv3d_dataloader', type=str)
     parser.add_argument('-data_workers', default=1, type=int)
     parser.add_argument('-epochs', default=50, type=int)
+    parser.add_argument('-logger_size', default=632, type=int)
     parser.add_argument('-is_deep_supervision', default=True, type=lambda x: (str(x).lower() == 'true'))
     parser.add_argument('-is_debug', default=True, type=lambda x: (str(x).lower() == 'true'))
     parser.add_argument('-unet_depth', default=5, type=int)
@@ -121,11 +122,23 @@ def main():
         'best_l1': -1.0,
         'avg_epoch_time': -1,
         'epoch_time': -1,
+        'avg_getitem_speed' : -1,
+        'avg_forward_speed' : -1,
+        'avg_MS_SSIM_speed' : -1,
+        'avg_mse_speed' : -1,
+        'avg_l1_speed' : -1,
         'early_stopping_patience': 0,
         'early_percent_improvement': 0,
     }
 
     avg_time_epochs = []
+    avg_forward_speed = []
+    avg_MSSIM_speed = []
+    avg_MSE_speed = []
+    avg_L1_speed = []
+    avg_getitem_speed = []
+
+
     time_epoch = time.time()
 
     hP = args.__dict__
@@ -142,11 +155,13 @@ def main():
             stage = 'train'
             if data_loader == data_loader_test:
                 stage = 'test'
-
+            npk = 0
             for batch in tqdm(data_loader):
-
+                npk+=1
+                forward_start = time.time()
                 y = batch['greyscale_image']
                 x = batch['augmented_image']
+                avg_getitem_speed.append(batch['dataloader_speed'])
 
                 y = y.float()
                 x = x.float()
@@ -176,11 +191,19 @@ def main():
                     optimizer.zero_grad()
 
                 if args.model == "temporal_unet_plus_plus":
+                    mssim_time_start = time.time()
                     MS_SSIM_L1 = MS_SSIM_L1_LOSS().forward(y_prim.detach()[:,2,:,:], y[:,0,2,:,:]).cpu()
+                    avg_MSSIM_speed.append((time.time() - mssim_time_start) / 60.0)
                 else:
+                    mssim_time_start = time.time()
                     MS_SSIM_L1 = MS_SSIM_L1_LOSS().forward(y_prim.detach(), y).cpu()
+                    avg_MSSIM_speed.append((time.time() - mssim_time_start) / 60.0)
+                mse_time_start = time.time()
                 mse = F.mse_loss(y_prim.detach(), y).cpu()
+                avg_MSE_speed.append((time.time() - mse_time_start) / 60.0)
+                l1_time_start = time.time()
                 l1 = F.l1_loss(y_prim.detach(), y).cpu()
+                avg_L1_speed.append((time.time() - l1_time_start) / 60.0)
 
 
                 loss = loss.cpu()
@@ -205,6 +228,23 @@ def main():
                             tensorboard_image_idx += 1
                         else:
                             break
+
+                if npk % 100 == 0:
+                    if stage == 'train':
+                        rootLogger.info(f'{stage} ------ Train loss : {npk} out of {args.logger_size}  {loss.item()}, Average Forward speed: {np.average(avg_forward_speed)}min, Average getitem speed: {np.average(avg_getitem_speed)}min ')
+                    else:
+                        rootLogger.info(
+                            f'{stage} ------ Test loss : {loss.item()}, Average Forward speed: {np.average(avg_forward_speed)}min ')
+
+                forward_time = (time.time() - forward_start) / 60.0
+                avg_forward_speed.append(forward_time)
+                state['avg_forward_speed'] = np.average(avg_forward_speed)
+                state['avg_MS_SSIM_speed'] = np.average(avg_MSSIM_speed)
+                state['avg_mse_speed'] = np.average(avg_MSE_speed)
+                state['avg_l1_speed'] = np.average(avg_L1_speed)
+                state['avg_getitem_speed'] = np.average(avg_getitem_speed)
+
+
 
         epoch_time = (time.time() - time_epoch) / 60.0
         state['epoch_time'] = epoch_time

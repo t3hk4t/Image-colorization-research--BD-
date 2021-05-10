@@ -30,7 +30,7 @@ parser.add_argument(
 
 parser.add_argument(
     '-script',
-    default='main2.py',
+    default='main.py',
     type=str)
 
 parser.add_argument(

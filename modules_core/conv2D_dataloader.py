@@ -3,6 +3,7 @@ import os
 import torch
 import numpy as np
 import json
+import time
 import random
 from modules import torch_utils
 from torch.utils.data import Dataset
@@ -57,6 +58,7 @@ class SyntheticNoise2DDataset(Dataset):
         return len(self.dataset_samples)
 
     def __getitem__(self, idx):
+        time_start = time.time()
         image = np.array(self.dataset_samples[idx][:], dtype='float32')
         greyscale_image = image[:, :, self.grey_idx - 1]
         augmented_image = image[:, :, self.augmented_idx - 1]
@@ -65,7 +67,8 @@ class SyntheticNoise2DDataset(Dataset):
         augmented_image = (augmented_image - 0) / 100
 
         return {'greyscale_image': torch.from_numpy(greyscale_image),
-                'augmented_image': torch.from_numpy(augmented_image)}
+                'augmented_image': torch.from_numpy(augmented_image),
+                'dataloader_speed' : (time.time() - time_start)/60,}
 
 
 def get_data_loaders(args):

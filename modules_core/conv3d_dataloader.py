@@ -145,6 +145,7 @@ class SyntheticNoise3DDataset(Dataset):
         return len(self.dataset_samples)
 
     def __getitem__(self, idx):
+        time_start = time.time()
         img_arr = []
 
         for item in self.dataset_samples[idx]:
@@ -227,7 +228,8 @@ class SyntheticNoise3DDataset(Dataset):
 
 
         return {'greyscale_image': torch.from_numpy(greyscale_image),
-                'augmented_image': torch.from_numpy(augmented_image)}
+                'augmented_image': torch.from_numpy(augmented_image),
+                'dataloader_speed' : (time.time() - time_start)/60, }
 
 
 def get_data_loaders(args):
